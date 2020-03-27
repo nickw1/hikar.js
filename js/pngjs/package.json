@@ -1,0 +1,23 @@
+{
+  "author": "Arian Stolwijk",
+  "name": "png.js",
+  "description": "A PNG decoder fully written in JavaScript",
+  "version": "0.2.2",
+  "repository": {
+    "url": "git://github.com/arian/pngjs.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "browserify ./PNGReader.js -s PNGReader -o html/png.js"
+  },
+  "main": "PNGReader.js",
+  "files": [
+    "PNG.js",
+    "PNGReader.js"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "browserify": "^12.0.1",
+    "canvas": "^1.3.5"
+  }
+}

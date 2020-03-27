@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>PNG Decoder in JavaScript</title>
+	<script src="png.js"></script>
+</head>
+<body>
+
+<div>
+	<input type="file" id="file">
+</div>
+
+<canvas width="800" height="550" id="canvas"></canvas>
+
+<script>
+
+var reader = new FileReader();
+
+reader.onload = function(event){
+	var bytes = event.target.result;
+	var pngReader = new PNGReader(bytes);
+	pngReader.parse(function(err, png){
+		if (err) throw err;
+		console.log('image is <' + png.width + ',' + png.height +'>');
+		console.log(png);
+		drawOnCanvas(png);
+	});
+};
+
+var file = document.getElementById('file');
+file.onchange = function(event){
+	reader.readAsArrayBuffer(file.files[0]);
+}
+
+var drawOnCanvas = function(png){
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+	var canvasWidth = canvas.width;
+	var canvasHeight = canvas.height;
+	var canvasData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+	var i = 0;
+
+	var width = Math.min(png.width, canvasWidth);
+	var height = Math.min(png.height, canvasHeight);
+
+	for (var y = 0; y < height; y++){
+		for (var x = 0; x < width; x++){
+			var colors = png.getPixel(x, y);
+			canvasData.data[i++] = colors[0];
+			canvasData.data[i++] = colors[1];
+			canvasData.data[i++] = colors[2];
+			canvasData.data[i++] = colors[3];
+		}
+		// move index to the next line
+		var d = canvasWidth - width;
+		if (d > 0) i += d * 4;
+	}
+
+	ctx.putImageData(canvasData, 0, 0);
+
+}
+
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'f.png', true);
+xhr.responseType = 'arraybuffer';
+
+xhr.onload = function(e){
+	if (this.status == 200){
+		var reader = new PNGReader(this.response);
+		reader.parse(function(err, png){
+			if (err) throw err;
+			console.log(png);
+		});
+	}
+};
+
+xhr.send();
+
+</script>
+
+</body>
+</html>
