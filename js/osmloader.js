@@ -3,11 +3,11 @@ const OsmWay = require('./osmway');
 class OsmLoader {
     constructor(system) {
         this.system = system;
-        this.drawProps = { 'footway' : {  color:'#ffff00', width: 5 },
-             'path' : {  color: '#ffff00', width: 5 },
-             'steps' : { color: '#ffff00', width: 5 },
-             'bridleway' : {  color: '#ff8080', width: 5 },
-             'byway' : { color: '#ff8080', width: 10 },
+        this.drawProps = { 'footway' : {  color:'#00ff00', width: 5 },
+             'path' : {  color: '#00ff00', width: 5 },
+             'steps' : { color: '#00ff00', width: 5 },
+             'bridleway' : {  color: '#ffc000', width: 5 },
+             'byway' : { color: '#ff0000', width: 10 },
             'track' :  { color: '#ff8080', width: 10 },
             'cycleway' : { color: '#00ffff', width: 5 },
             'residential' : { width: 10 },
@@ -21,7 +21,7 @@ class OsmLoader {
     }
 
     loadOsm(osmData, tileid, dem=null) {
-        const geometries = [];
+        const features = [];
         osmData.features.forEach  ( (f,i)=> {
             const line = [];
             if(f.geometry.type=='LineString' && f.geometry.coordinates.length >= 2) {
@@ -30,7 +30,6 @@ class OsmLoader {
                         const h = 
                             dem? dem.getHeight(coord[0], coord[1]) + 4: 0;
                        line.push([coord[0], h, -coord[1]]);
-                        console.log(`adding ${coord[0]} ${h} ${-coord[1]}`);
                });
                     
                 
@@ -43,7 +42,7 @@ class OsmLoader {
                const color = this.drawProps[f.properties.highway] ?
                     (this.drawProps[f.properties.highway].color||'#ffffff'):
                     '#ffffff';
-               geometries.push({
+               features.push({
                     geometry: g, 
                     properties: {
                         id: `${tileid}:${f.properties.osm_id}`,
@@ -53,7 +52,7 @@ class OsmLoader {
 
             }  
         }); 
-        return geometries;
+        return features;
     }
 
     makeWayGeom(vertices, width=1) {

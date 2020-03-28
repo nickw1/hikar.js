@@ -23,15 +23,17 @@ class OSM3D {
     }
 
     async applyDem(osmData, dem) {
-        const data = await this.osmLoader.loadOsm(osmData,`${dem.tile.z}/${dem.tile.x}/${dem.tile.y}`, dem.dem);
-        console.log(JSON.stringify(data));
+        const features = await this.osmLoader.loadOsm(osmData,`${dem.tile.z}/${dem.tile.x}/${dem.tile.y}`, dem.dem);
+        return features;
     }
 
     async loadDem(demData) {
+        let allFeat = [];
         for(let i=0; i<demData.length; i++) {
             const osmData = await this.loadData(demData[i].tile);
-            await this.applyDem(osmData, demData[i]);
+			allFeat = allFeat.concat(await this.applyDem(osmData, demData[i]));
         }
+        return allFeat;    
     }
 }
 

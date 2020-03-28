@@ -22,17 +22,16 @@ window.onload = function() {
     }    
 
     terrarium = new Terrarium({
-        url: '/webapp/proxy.php?x={x}&y={y}&z={z}',
-        zoom: 14
+        url: 'proxy.php?x={x}&y={y}&z={z}',
+        zoom: 13
     });
-    osm3d = new OSM3D('/fm/ws/tsvr.php?x={x}&y={y}&z={z}&way=highway');
+    osm3d = new OSM3D('https://hikar.org/fm/ws/tsvr.php?x={x}&y={y}&z={z}&way=highway');
     if(get.lat && get.lon) {
-        getData(parseFloat(get.lon), parseFloat(get.lat));
+        getData(parseFloat(get.lon), parseFloat(get.lat), true);
     } else {
         window.addEventListener('gps-camera-update-position', async(e)=> {
             const curTime = new Date().getTime();
             if(first==true && curTime - lastTime > 10000) {
-                alert(`Got GPS event: ${e.detail.position.longitude} ${e.detail.position.latitude}`);
                 lastTime = curTime;
                 first = false;
                 getData(e.detail.position.longitude, e.detail.position.latitude);
@@ -41,7 +40,20 @@ window.onload = function() {
     }
 }
 
-async function getData(lon, lat) {
+async function getData(lon, lat, simulated=false) {
     const results = await terrarium.setPosition(lon, lat);
-    await osm3d.loadDem(results.demData);
+    const camera = document.querySelector("a-camera");
+    const position = camera.getAttribute("position");
+    position.y = results.elevation;
+    console.log(`ELEVATION: ${results.elevation}`);
+    first = false;
+    if(simulated) {
+        camera.setAttribute('gps-projected-camera', {
+            simulateLatitude: lat,
+            simulateLongitude: lon
+        });
+    }
+    camera.setAttribute("position", position);
+    const osmResults = await osm3d.loadDem(results.demData);
+    window.dispatchEvent(new CustomEvent('vector-ways-loaded', { detail: { features: osmResults } } ));
 }
