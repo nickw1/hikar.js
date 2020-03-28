@@ -46,6 +46,7 @@ async function getData(lon, lat, simulated=false) {
     const position = camera.getAttribute("position");
     position.y = results.elevation;
     console.log(`ELEVATION: ${results.elevation}`);
+    camera.setAttribute("position", position);
     first = false;
     if(simulated) {
         camera.setAttribute('gps-projected-camera', {
@@ -53,7 +54,6 @@ async function getData(lon, lat, simulated=false) {
             simulateLongitude: lon
         });
     }
-    camera.setAttribute("position", position);
     const osmResults = await osm3d.loadDem(results.demData);
     window.dispatchEvent(new CustomEvent('vector-ways-loaded', { detail: { features: osmResults } } ));
 }
