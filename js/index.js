@@ -1,11 +1,11 @@
 const Terrarium = require('./terrarium');
 const OSM3D = require('./osm3d');
 
-let terrarium, osm3d;
+let terrarium, osm3d, gpsTriggered;
 
 window.onload = function() {
     let lastTime = 0;
-    let first = true;
+    gpsTriggered = true;
 
     const parts = window.location.href.split('?');     
     const get = {  };     
@@ -31,9 +31,8 @@ window.onload = function() {
     } else {
         window.addEventListener('gps-camera-update-position', async(e)=> {
             const curTime = new Date().getTime();
-            if(first==true && curTime - lastTime > 10000) {
+            if(gpsTriggered==true && curTime - lastTime > 10000) {
                 lastTime = curTime;
-                first = false;
                 getData(e.detail.position.longitude, e.detail.position.latitude);
             }
         });
@@ -47,8 +46,8 @@ async function getData(lon, lat, simulated=false) {
     position.y = results.elevation;
     console.log(`ELEVATION: ${results.elevation}`);
     camera.setAttribute("position", position);
-    first = false;
     if(simulated) {
+        gpsTriggered = false;
         camera.setAttribute('gps-projected-camera', {
             simulateLatitude: lat,
             simulateLongitude: lon
