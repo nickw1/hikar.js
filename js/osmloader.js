@@ -3,13 +3,13 @@ const OsmWay = require('./osmway');
 class OsmLoader {
     constructor(system) {
         this.system = system;
-        this.drawProps = { 'footway' : {  width: 5 },
-             'path' : {  width: 5 },
-             'steps' : { width: 5 },
-             'bridleway' : {  width: 5 },
-             'byway' : { width: 10 },
-            'track' :  { width: 10 },
-            'cycleway' : { width: 5 },
+        this.drawProps = { 'footway' : {  color:'#ffff00', width: 5 },
+             'path' : {  color: '#ffff00', width: 5 },
+             'steps' : { color: '#ffff00', width: 5 },
+             'bridleway' : {  color: '#ff8080', width: 5 },
+             'byway' : { color: '#ff8080', width: 10 },
+            'track' :  { color: '#ff8080', width: 10 },
+            'cycleway' : { color: '#00ffff', width: 5 },
             'residential' : { width: 10 },
             'unclassified' : { width: 15 },
             'tertiary' :  { width: 15 },
@@ -17,7 +17,7 @@ class OsmLoader {
             'primary' : { width : 30 },
             'trunk' : { width: 30 },
             'motorway' : { width: 60 }
-        }
+        };
     }
 
     loadOsm(osmData, tileid, dem=null) {
@@ -40,7 +40,16 @@ class OsmLoader {
                             (this.drawProps[f.properties.highway].width || 5) :
                          5));
 
-               geometries.push(g); 
+               const color = this.drawProps[f.properties.highway] ?
+                    (this.drawProps[f.properties.highway].color||'#ffffff'):
+                    '#ffffff';
+               geometries.push({
+                    geometry: g, 
+                    properties: {
+                        id: `${tileid}:${f.properties.osm_id}`,
+                        color: color
+                    }
+               }); 
 
             }  
         }); 
