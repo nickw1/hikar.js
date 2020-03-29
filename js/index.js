@@ -1,7 +1,7 @@
 const Terrarium = require('./terrarium');
 const OSM3D = require('./osm3d');
 
-let terrarium, osm3d, gpsTriggered;
+let terrarium, osm3d, gpsTriggered, gettingData = false;
 
 window.onload = function() {
     let lastTime = 0;
@@ -31,8 +31,8 @@ window.onload = function() {
     } else {
         window.addEventListener('gps-camera-update-position', async(e)=> {
             const curTime = new Date().getTime();
-			alert('gps camera has updated position');
-            if(gpsTriggered==true && curTime - lastTime > 600000) {
+            if(gpsTriggered==true && curTime - lastTime > 50000 && !gettingData) {
+                alert('gps camera has updated position');
                 lastTime = curTime;
                 getData(e.detail.position.longitude, e.detail.position.latitude);
             }
@@ -41,10 +41,12 @@ window.onload = function() {
 }
 
 async function getData(lon, lat, simulated=false) {
+    gettingData = true;
     const results = await terrarium.setPosition(lon, lat);
     const camera = document.querySelector("a-camera");
     const position = camera.getAttribute("position");
     position.y = results.elevation;
+    alert(`Elev: ${results.elevation}`);
     camera.setAttribute("position", position);
     if(simulated) {
         gpsTriggered = false;
@@ -55,4 +57,5 @@ async function getData(lon, lat, simulated=false) {
     }
     const osmResults = await osm3d.loadDem(results.demData);
     window.dispatchEvent(new CustomEvent('vector-ways-loaded', { detail: { features: osmResults } } ));
+    gettingData = false;
 }

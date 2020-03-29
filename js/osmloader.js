@@ -3,20 +3,20 @@ const OsmWay = require('./osmway');
 class OsmLoader {
     constructor(system) {
         this.system = system;
-        this.drawProps = { 'footway' : {  color:'#00ff00', width: 5 },
-             'path' : {  color: '#00ff00', width: 5 },
-             'steps' : { color: '#00ff00', width: 5 },
-             'bridleway' : {  color: '#ffc000', width: 5 },
-             'byway' : { color: '#ff0000', width: 10 },
-            'track' :  { color: '#ff8080', width: 10 },
-            'cycleway' : { color: '#00ffff', width: 5 },
-            'residential' : { width: 10 },
-            'unclassified' : { width: 15 },
-            'tertiary' :  { width: 15 },
-            'secondary' : { width: 20 },
-            'primary' : { width : 30 },
-            'trunk' : { width: 30 },
-            'motorway' : { width: 60 }
+        this.drawProps = { 'footway' : {  color:'#00ff00' },
+             'path' : {  color: '#00ff00'},
+             'steps' : { color: '#00ff00' },
+             'bridleway' : {  color: '#ffc000'},
+             'byway' : { color: '#ff0000' },
+            'track' :  { color: '#ff8080' },
+            'cycleway' : { color: '#00ffff' },
+            'residential' : { },
+            'unclassified' : { },
+            'tertiary' :  {  },
+            'secondary' : { },
+            'primary' : { },
+            'trunk' : { },
+            'motorway' : { }
         };
     }
 
@@ -28,7 +28,7 @@ class OsmLoader {
                 f.geometry.coordinates.forEach (coord=> {
             
                         const h = 
-                            dem? dem.getHeight(coord[0], coord[1]) + 4: 0;
+                            dem? dem.getHeight(coord[0], coord[1]) : 0;
                        line.push([coord[0], h, -coord[1]]);
                });
                     
