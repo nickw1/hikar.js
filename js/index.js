@@ -1,7 +1,7 @@
 const Terrarium = require('./terrarium');
 const OSM3D = require('./osm3d');
 
-let terrarium, osm3d, gpsTriggered, gettingData = false;
+let terrarium, osm3d, gpsTriggered, gettingData = false, first = true;
 
 window.onload = function() {
     let lastTime = 0;
@@ -31,8 +31,12 @@ window.onload = function() {
     } else {
         window.addEventListener('gps-camera-update-position', async(e)=> {
             const curTime = new Date().getTime();
-            if(gpsTriggered==true && curTime - lastTime > 50000 && !gettingData) {
-                alert('gps camera has updated position');
+            if(gpsTriggered==true && curTime - lastTime > 5000 && !gettingData) {
+                if(first == true) {
+                    alert('Received GPS location');
+                    first = false;
+                }
+
                 lastTime = curTime;
                 getData(e.detail.position.longitude, e.detail.position.latitude);
             }
