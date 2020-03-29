@@ -31,8 +31,8 @@ window.onload = function() {
     } else {
         window.addEventListener('gps-camera-update-position', async(e)=> {
             const curTime = new Date().getTime();
+			alert('gps camera has updated position');
             if(gpsTriggered==true && curTime - lastTime > 600000) {
-                alert('got gps position');
                 lastTime = curTime;
                 getData(e.detail.position.longitude, e.detail.position.latitude);
             }
@@ -45,11 +45,10 @@ async function getData(lon, lat, simulated=false) {
     const camera = document.querySelector("a-camera");
     const position = camera.getAttribute("position");
     position.y = results.elevation;
-    alert(`ELEVATION: ${results.elevation}`);
     camera.setAttribute("position", position);
     if(simulated) {
         gpsTriggered = false;
-        camera.setAttribute('gps-projected-camera', {
+        camera.setAttribute('gps-camera', {
             simulateLatitude: lat,
             simulateLongitude: lon
         });
