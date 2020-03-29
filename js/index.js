@@ -50,7 +50,6 @@ async function getData(lon, lat, simulated=false) {
     const camera = document.querySelector("a-camera");
     const position = camera.getAttribute("position");
     position.y = results.elevation;
-    alert(`Elev: ${results.elevation}`);
     camera.setAttribute("position", position);
     if(simulated) {
         gpsTriggered = false;
@@ -60,6 +59,7 @@ async function getData(lon, lat, simulated=false) {
         });
     }
     const osmResults = await osm3d.loadDem(results.demData);
+	alert('Data now loaded');
     window.dispatchEvent(new CustomEvent('vector-ways-loaded', { detail: { features: osmResults } } ));
     gettingData = false;
 }

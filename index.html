@@ -14,16 +14,12 @@
 </head>
 
 <body style="margin:0; overflow: hidden;">
-	<input type="button" id="btn1" value="simulate" style='z-index: 9999' />
-	<br />
-	<a-scene style='margin: 10px' vr-mode-ui="enabled: false" embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+	<a-scene style='margin: 10px; z-index: 1' vr-mode-ui="enabled: false" embedded arjs="sourceType: webcam; debugUIEnabled: false;">
 
 		<a-camera id='camera1' gps-camera rotation-reader></a-camera>
-
 		<a-entity gps-vector-ways></a-entity>
 
 	</a-scene>
-
 </body>
 
 </html>
