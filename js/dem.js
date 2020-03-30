@@ -1,12 +1,12 @@
 class DEM  {
-    constructor(geom, bottomLeft) {
+    constructor(vertices, bottomLeft, ptWidth, ptHeight, xSpacing, ySpacing) {
         
         this.bottomLeft=bottomLeft;
-        this.ptWidth=geom.parameters.widthSegments+1;
-        this.ptHeight=geom.parameters.heightSegments+1;
-        this.vertices = geom.getAttribute("position").array;
-        this.xSpacing=geom.parameters.width / geom.parameters.widthSegments;
-        this.ySpacing=geom.parameters.height / geom.parameters.heightSegments;
+        this.ptWidth = ptWidth;
+        this.ptHeight = ptHeight;
+        this.vertices = vertices;
+        this.xSpacing = xSpacing;
+        this.ySpacing = ySpacing;
     }
     
     

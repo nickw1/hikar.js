@@ -46,9 +46,14 @@ class Terrarium {
             const geom = this.createDemGeometry(data);
             geom.geom.computeFaceNormals();
             geom.geom.computeVertexNormals();
-            const dem = new DEM(geom.geom, geom.realBottomLeft);
+            const dem = new DEM(geom.geom.getAttribute("position").array, 
+                                geom.realBottomLeft,
+                                geom.geom.parameters.widthSegments+1,
+                                geom.geom.parameters.heightSegments+1,
+                                geom.geom.parameters.width / geom.geom.parameters.widthSegments,
+                                geom.geom.parameters.height / geom.geom.parameters.heightSegments);
             this.dems[`${data.tile.z}/${data.tile.x}/${data.tile.y}`] = dem;
-            demData = { dem: dem, tile: data.tile};
+            demData = { dem: dem, tile: data.tile };
         }
         return demData;
     }

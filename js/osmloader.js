@@ -1,8 +1,7 @@
 const OsmWay = require('./osmway');
 
 class OsmLoader {
-    constructor(system) {
-        this.system = system;
+    constructor() {
         this.drawProps = { 'footway' : {  color:'#00ff00' },
              'path' : {  color: '#00ff00'},
              'steps' : { color: '#00ff00' },
