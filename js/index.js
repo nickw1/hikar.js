@@ -32,11 +32,6 @@ window.onload = function() {
         window.addEventListener('gps-camera-update-position', async(e)=> {
             const curTime = new Date().getTime();
             if(gpsTriggered==true && curTime - lastTime > 5000 && !gettingData) {
-                if(first == true) {
-                    alert('Received GPS location');
-                    first = false;
-                }
-
                 lastTime = curTime;
                 getData(e.detail.position.longitude, e.detail.position.latitude);
             }
@@ -46,6 +41,7 @@ window.onload = function() {
 
 async function getData(lon, lat, simulated=false) {
     gettingData = true;
+    document.getElementById('status').innerHTML = 'Loading elevation data...';
     const results = await terrarium.setPosition(lon, lat);
     const camera = document.querySelector("a-camera");
     const position = camera.getAttribute("position");
@@ -58,7 +54,9 @@ async function getData(lon, lat, simulated=false) {
             simulateLongitude: lon
         });
     }
+    document.getElementById('status').innerHTML = 'Loading OSM data...';
     const osmResults = await osm3d.loadDem(results.demData);
     window.dispatchEvent(new CustomEvent('vector-ways-loaded', { detail: { features: osmResults } } ));
+    document.getElementById('status').innerHTML = '';
     gettingData = false;
 }
