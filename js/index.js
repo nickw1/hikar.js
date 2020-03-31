@@ -8,7 +8,7 @@ window.onload = function() {
     gpsTriggered = true;
 
     const parts = window.location.href.split('?');     
-    const get = {  };     
+    const get = { };
 
     if(parts.length==2) {         
         if(parts[1].endsWith('#')) {             
@@ -59,7 +59,6 @@ async function getData(lon, lat, simulated=false) {
         });
     }
     const osmResults = await osm3d.loadDem(results.demData);
-	alert('Data now loaded');
     window.dispatchEvent(new CustomEvent('vector-ways-loaded', { detail: { features: osmResults } } ));
     gettingData = false;
 }

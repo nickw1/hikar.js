@@ -26,29 +26,31 @@ class OsmLoader {
             if(f.geometry.type=='LineString' && f.geometry.coordinates.length >= 2) {
                 f.geometry.coordinates.forEach (coord=> {
             
-                        const h = 
-                            dem? dem.getHeight(coord[0], coord[1]) : 0;
-                       line.push([coord[0], h, -coord[1]]);
+                    const h = dem? dem.getHeight(coord[0], coord[1]) : 0;
+                    if (h >= 0) {
+                        line.push([coord[0], h-5, -coord[1]]);
+                    }
                });
                     
                 
-                const g = this.makeWayGeom(line,     
+                if(line.length >= 2) {
+                    const g = this.makeWayGeom(line,     
                        
                         (this.drawProps[f.properties.highway] ? 
                             (this.drawProps[f.properties.highway].width || 5) :
                          5));
 
-               const color = this.drawProps[f.properties.highway] ?
+                   const color = this.drawProps[f.properties.highway] ?
                     (this.drawProps[f.properties.highway].color||'#ffffff'):
                     '#ffffff';
-               features.push({
-                    geometry: g, 
-                    properties: {
-                        id: `${tileid}:${f.properties.osm_id}`,
-                        color: color
-                    }
-               }); 
-
+                   features.push({
+                       geometry: g, 
+                       properties: {
+                           id: `${tileid}:${f.properties.osm_id}`,
+                           color: color
+                       }
+                   }); 
+                }
             }  
         }); 
         return features;

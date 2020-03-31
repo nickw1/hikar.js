@@ -19,13 +19,13 @@ AFRAME.registerComponent('gps-vector-ways', {
             } else { 
                 if (!this.originSphMerc) {
                     const gpsc = camera.components['gps-camera'];
-                    console.log(`originCoords: ${JSON.stringify(gpsc.originCoords)}`);
+                    //console.log(`originCoords: ${JSON.stringify(gpsc.originCoords)}`);
                     this.originSphMerc = this.sphMerc.project(gpsc.originCoords.longitude, gpsc.originCoords.latitude);
                 }
             
                 ev.detail.features.forEach ( (f) => {
                     f.geometry.translate(-this.originSphMerc[0], 0, this.originSphMerc[1]);
-                    console.log(JSON.stringify(f));
+                    //console.log(JSON.stringify(f));
                     var mesh = new THREE.Mesh(f.geometry, new THREE.MeshBasicMaterial( { color: f.properties.color } ));
                     this.el.setObject3D(f.properties.id, mesh);
                 });
