@@ -49,7 +49,7 @@ async function getData(lon, lat, simulated=false) {
     camera.setAttribute("position", position);
     if(simulated) {
         gpsTriggered = false;
-        camera.setAttribute('gps-camera', {
+        camera.setAttribute('gps-projected-camera', {
             simulateLatitude: lat,
             simulateLongitude: lon
         });
