@@ -19,6 +19,10 @@
     <a-scene vr-mode-ui="enabled: false" embedded arjs='sourceType: webcam; debugUIEnabled: false;'>
 
         <div id='status'></div>
+
+		<a-box material="color: red" scale="5 5 5" gps-projected-entity-place="latitude:51.0486; longitude:-0.7226; elevation:90.0;"></a-box>
+		<a-box material="color: yellow" scale="5 5 5" gps-projected-entity-place="latitude:51.0491; longitude:-0.7246; elevation:90.0;"></a-box>
+
         <a-camera id='camera1' gps-projected-camera rotation-reader vertical-controls wasd-controls="acceleration: 1300"></a-camera>
         <a-entity gps-vector-ways></a-entity>
 

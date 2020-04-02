@@ -8,7 +8,7 @@ window.onload = function() {
     gpsTriggered = true;
 
     const parts = window.location.href.split('?');     
-    const get = { };
+    const get = { }
 
     if(parts.length==2) {         
         if(parts[1].endsWith('#')) {             
