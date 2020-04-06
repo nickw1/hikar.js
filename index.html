@@ -24,7 +24,7 @@
 		<a-box material="color: yellow" scale="5 5 5" gps-projected-entity-place="latitude:51.0491; longitude:-0.7246; elevation:90.0;"></a-box>
 
         <a-camera id='camera1' gps-projected-camera rotation-reader vertical-controls wasd-controls="acceleration: 1300"></a-camera>
-        <a-entity gps-vector-ways></a-entity>
+        <a-entity id='osmElement' terrarium-dem='zoom: 13; url: proxy.php?x={x}&y={y}&z={z}' osm3d='url: https://hikar.org/fm/ws/tsvr.php?x={x}&y={y}&z={z}&way=highway' gps-vector-ways></a-entity>
 
     </a-scene>
 </body>

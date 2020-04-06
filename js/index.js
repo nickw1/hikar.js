@@ -1,9 +1,7 @@
-const Terrarium = require('./terrarium');
-const OSM3D = require('./osm3d');
 
-let terrarium, osm3d, gpsTriggered, gettingData = false, first = true;
+let gpsTriggered = true, gettingData = false, osmElement, simulated = false;
 
-window.onload = function() {
+window.onload = () => {
     let lastTime = 0;
     gpsTriggered = true;
 
@@ -21,42 +19,48 @@ window.onload = function() {
         }     
     }    
 
-    terrarium = new Terrarium({
-        url: 'proxy.php?x={x}&y={y}&z={z}',
-        zoom: 13
-    });
-    osm3d = new OSM3D('https://hikar.org/fm/ws/tsvr.php?x={x}&y={y}&z={z}&way=highway');
+    osmElement = document.getElementById('osmElement');
     if(get.lat && get.lon) {
         getData(parseFloat(get.lon), parseFloat(get.lat), true);
     } else {
         window.addEventListener('gps-camera-update-position', async(e)=> {
             const curTime = new Date().getTime();
-            if(gpsTriggered==true && curTime - lastTime > 5000 && !gettingData) {
+            if(gpsTriggered==true && curTime - lastTime > 5000) {
                 lastTime = curTime;
                 getData(e.detail.position.longitude, e.detail.position.latitude);
             }
         });
     }
+    osmElement.addEventListener('terrarium-dem-loaded', async(e)=> {
+        const camera = document.querySelector('a-camera');
+        const position = camera.getAttribute('position');
+        position.y = e.detail.elevation;
+        camera.setAttribute('position', position);
+        if(simulated) {
+            gpsTriggered = false;
+            camera.setAttribute('gps-projected-camera', {
+                simulateLatitude: e.detail.lat,
+                simulateLongitude: e.detail.lon
+            });
+        }
+        document.getElementById('status').innerHTML = 'Loading OSM data...';
+    });
+    osmElement.addEventListener('vector-ways-loaded', e=> {
+        document.getElementById('status').innerHTML = '';
+        gettingData = false;
+        simulated = false;
+    });
+    
 }
 
-async function getData(lon, lat, simulated=false) {
-    gettingData = true;
-    document.getElementById('status').innerHTML = 'Loading elevation data...';
-    const results = await terrarium.setPosition(lon, lat);
-    const camera = document.querySelector("a-camera");
-    const position = camera.getAttribute("position");
-    position.y = results.elevation;
-    camera.setAttribute("position", position);
-    if(simulated) {
-        gpsTriggered = false;
-        camera.setAttribute('gps-projected-camera', {
-            simulateLatitude: lat,
-            simulateLongitude: lon
+function getData(lon, lat, sim=false) {
+    if(!gettingData) {
+        simulated = sim;
+        gettingData = true;
+        document.getElementById('status').innerHTML = 'Loading elevation data...';
+        osmElement.setAttribute('terrarium-dem', {
+            lon: lon,
+            lat: lat
         });
     }
-    document.getElementById('status').innerHTML = 'Loading OSM data...';
-    const osmResults = await osm3d.loadDem(results.demData);
-    window.dispatchEvent(new CustomEvent('vector-ways-loaded', { detail: { features: osmResults } } ));
-    document.getElementById('status').innerHTML = '';
-    gettingData = false;
 }

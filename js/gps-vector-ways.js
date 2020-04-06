@@ -8,7 +8,6 @@ AFRAME.registerComponent('gps-vector-ways', {
         this.originSphMerc = null;
 
         this.vectorWaysListener = (ev) => {
-            console.log(`vectorWaysListener... got ${ev.detail.features.length} features.`);
             var camera = document.querySelector('[gps-projected-camera]');
             if(!camera.components['gps-projected-camera']) {
                 consoleerror('gps-projected-camera not initialised');
@@ -17,14 +16,13 @@ AFRAME.registerComponent('gps-vector-ways', {
                     this.originSphMerc = camera.components['gps-projected-camera'].originCoordsProjected;
                 }
             
-                ev.detail.features.forEach ( (f) => {
-                    f.geometry.translate(-this.originSphMerc[0], 0, this.originSphMerc[1]);
-                    var mesh = new THREE.Mesh(f.geometry, new THREE.MeshBasicMaterial( { color: f.properties.color } ));
-                    this.el.setObject3D(f.properties.id, mesh);
+                console.log(`Object3Ds on this entity:`);
+                ev.detail.objectIds.forEach ( k=> {
+                    this.el.object3DMap[k].geometry.translate(-this.originSphMerc[0], 0, this.originSphMerc[1]);
                 });
             }
         };
 
-        window.addEventListener('vector-ways-loaded', this.vectorWaysListener);
+        this.el.addEventListener('vector-ways-loaded', this.vectorWaysListener);
     }
 });
