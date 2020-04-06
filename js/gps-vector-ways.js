@@ -10,7 +10,7 @@ AFRAME.registerComponent('gps-vector-ways', {
         this.vectorWaysListener = (ev) => {
             var camera = document.querySelector('[gps-projected-camera]');
             if(!camera.components['gps-projected-camera']) {
-                consoleerror('gps-projected-camera not initialised');
+                console.error('gps-projected-camera not initialised');
             } else {
                 if(!this.originSphMerc) {
                     this.originSphMerc = camera.components['gps-projected-camera'].originCoordsProjected;
