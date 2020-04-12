@@ -19,6 +19,27 @@ window.onload = () => {
         }     
     }    
 
+    if('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/hikar.org/webapp/svcw.js')
+            .then(registration => {
+                console.log('Successfully registered service worker')
+				let serviceWorker;
+				if(registration.installing) {
+					serviceWorker = registration.installing;
+				} else if (registration.waiting) {
+					serviceWorker = registration.waiting;
+				} else if (registration.active) {
+					serviceWorker = registration.active;
+				}
+
+				console.log(`PHASE: ${serviceWorker.state}`);
+            })
+
+            .catch(e => {
+                console.error(`Service worker registration failed: ${e}`);
+            });    
+    }
+
     osmElement = document.getElementById('osmElement');
     if(get.lat && get.lon) {
         getData(parseFloat(get.lon), parseFloat(get.lat), true);
@@ -50,7 +71,7 @@ window.onload = () => {
         gettingData = false;
         simulated = false;
     });
-    
+
 }
 
 function getData(lon, lat, sim=false) {
