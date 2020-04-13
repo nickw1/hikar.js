@@ -2,7 +2,7 @@
 const CACHE_NAME = 'hikarCache';
 const urlsToCache = [
     'index.html',
-    'js/bundle.js',
+    //'js/bundle.js',
     'css/webapp.css',
     'AR.js/aframe/build/aframe-ar-nft.js'
 ];
