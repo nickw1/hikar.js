@@ -1,11 +1,15 @@
 
 const CACHE_NAME = 'hikarCache';
 const urlsToCache = [
+    'index.html',
+    'js/bundle.js',
+    'css/webapp.css',
+    'AR.js/aframe/build/aframe-ar-nft.js'
 ];
 
 const cachableOnResponse = [
-    '/fm/ws/tsvr.php',
-    '/hikar.org/webapp/proxy.php'
+    'fm/ws/tsvr.php',
+    'webapp/proxy.php'
 ];
 
 self.addEventListener('install', ev=> {
@@ -32,7 +36,6 @@ self.addEventListener('fetch', ev=> {
     ev.respondWith(
         caches.match(ev.request)
             .then(resp=> {
-
                 if(resp) {
                     console.log(`This is in the service worker cache: ${url.pathname}`);
                     return resp;
@@ -41,7 +44,8 @@ self.addEventListener('fetch', ev=> {
                 console.log(`This is NOT in the service worker cache: ${url.pathname}`);
                 return fetch(ev.request)
                     .then(resp2 => {
-                        if(cachableOnResponse.indexOf(url.pathname) != -1) {
+                        let found = false;
+                        if (cachableOnResponse.filter(cachableUrl => url.pathname.indexOf(cachableUrl) != -1).length > 0) {
                             console.log('*** Caching this ***');
                             return caches.open(CACHE_NAME)
                                 .then(cache=> {

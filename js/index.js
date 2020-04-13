@@ -20,7 +20,7 @@ window.onload = () => {
     }    
 
     if('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/hikar.org/webapp/svcw.js')
+        navigator.serviceWorker.register('svcw.js')
             .then(registration => {
                 console.log('Successfully registered service worker')
 				let serviceWorker;
