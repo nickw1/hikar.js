@@ -1,4 +1,4 @@
-const Tiler = require('./tiler');
+const Tiler = require('nw-geolib').Tiler;
 
 class JsonTiler extends Tiler {
     constructor(url) {

@@ -1,4 +1,4 @@
-const Tiler = require('./tiler');
+const Tiler = require('nw-geolib').Tiler;
 const PNGReader = require('./pngjs/PNGReader');
 
 class DemTiler extends Tiler {

@@ -1,4 +1,4 @@
-const Tile=require('./Tile');
+const Tile=require('nw-geolib').Tile;
 const DEM = require("./dem");
 const DemTiler = require('./demtiler');
 
