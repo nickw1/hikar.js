@@ -1,4 +1,4 @@
-const Tile=require('nw-geolib').Tile;
+const Tile=require('jsfreemaplib').Tile;
 const DEM = require("./dem");
 const DemTiler = require('./demtiler');
 

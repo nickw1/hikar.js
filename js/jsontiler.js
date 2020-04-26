@@ -1,4 +1,4 @@
-const Tiler = require('nw-geolib').Tiler;
+const Tiler = require('jsfreemaplib').Tiler;
 
 class JsonTiler extends Tiler {
     constructor(url) {
