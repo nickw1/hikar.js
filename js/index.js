@@ -19,7 +19,7 @@ window.onload = () => {
         }     
     }    
 
-	
+    
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('svcw.js')
             .then(registration => {
@@ -40,7 +40,7 @@ window.onload = () => {
                 console.error(`Service worker registration failed: ${e}`);
             });    
     }
-	
+    
 
     osmElement = document.getElementById('osmElement');
     if(get.lat && get.lon) {
@@ -70,7 +70,7 @@ window.onload = () => {
         }
         document.getElementById('status').innerHTML = 'Loading OSM data...';
     });
-    osmElement.addEventListener('vector-ways-loaded', e=> {
+    osmElement.addEventListener('osm-data-loaded', e=> {
         document.getElementById('status').innerHTML = '';
         gettingData = false;
         simulated = false;
