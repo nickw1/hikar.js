@@ -1,4 +1,5 @@
 const OsmLoader = require('./osmloader');
+const GoogleProjection = require('jsfreemaplib').GoogleProjection;
 
 AFRAME.registerComponent('osm3d', {
 
@@ -46,11 +47,31 @@ AFRAME.registerComponent('osm3d', {
     },
 
     _applyDem: async function(osmData, dem) {
+        const originSphMerc = document.querySelector('a-camera').components['gps-projected-camera'].originCoordsProjected;
         const features = await this.osmLoader.loadOsm(osmData,`${dem.tile.z}/${dem.tile.x}/${dem.tile.y}`, dem.dem);
-        features.forEach ( f=> {
+        features.ways.forEach ( f=> {
             const mesh = new THREE.Mesh(f.geometry, new THREE.MeshBasicMaterial ( { color: f.properties.color } ));
             this.el.setObject3D(f.properties.id, mesh);
             this.newObjectIds.push(f.properties.id);
+        });
+        features.pois
+          .filter(f => f.properties.name !== undefined)
+          .forEach(f => {
+            const textEntity = document.createElement("a-text");
+            textEntity.setAttribute("value", f.properties.name);
+            textEntity.setAttribute("position", {
+                x: f.geometry[0] - originSphMerc[0], 
+                y: f.geometry[1] + 10,
+                z: -(f.geometry[2] - originSphMerc[1]), 
+            });
+            textEntity.setAttribute("scale", {
+                x: 100,
+                y: 100,
+                z: 100
+            });
+            textEntity.setAttribute("look-at", "[gps-projected-camera]");
+            this.el.appendChild(textEntity);
+            
         });
         return features;
     }

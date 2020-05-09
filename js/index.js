@@ -19,6 +19,7 @@ window.onload = () => {
         }     
     }    
 
+	
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('svcw.js')
             .then(registration => {
@@ -39,6 +40,7 @@ window.onload = () => {
                 console.error(`Service worker registration failed: ${e}`);
             });    
     }
+	
 
     osmElement = document.getElementById('osmElement');
     if(get.lat && get.lon) {

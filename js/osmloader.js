@@ -1,4 +1,5 @@
 const OsmWay = require('./osmway');
+const GoogleProjection = require('jsfreemaplib').GoogleProjection;
 
 class OsmLoader {
     constructor() {
@@ -8,7 +9,7 @@ class OsmLoader {
              'bridleway' : {  color: '#ffc000'},
              'byway' : { color: '#ff0000' },
             'track' :  { color: '#ff8080' },
-            'cycleway' : { color: '#00ffff' },
+            'cycleway' : { color: '#0000ff' },
             'residential' : { },
             'unclassified' : { },
             'tertiary' :  {  },
@@ -17,10 +18,11 @@ class OsmLoader {
             'trunk' : { },
             'motorway' : { }
         };
+        this.sphMerc = new GoogleProjection();
     }
 
     loadOsm(osmData, tileid, dem=null) {
-        const features = [];
+        const features = { ways: [], pois: [] };
         osmData.features.forEach  ( (f,i)=> {
             const line = [];
             if(f.geometry.type=='LineString' && f.geometry.coordinates.length >= 2) {
@@ -43,13 +45,26 @@ class OsmLoader {
                    const color = this.drawProps[f.properties.highway] ?
                     (this.drawProps[f.properties.highway].color||'#ffffff'):
                     '#ffffff';
-                   features.push({
+                   features.ways.push({
                        geometry: g, 
                        properties: {
                            id: `${tileid}:${f.properties.osm_id}`,
                            color: color
                        }
                    }); 
+                }
+            } else if(f.geometry.type == 'Point') {
+                const h = dem ? dem.getHeight(f.geometry.coordinates[0], f.geometry.coordinates[1]) : 0;
+                if(h >= 0) {
+                    const lonLat = this.sphMerc.unproject(f.geometry.coordinates); 
+                    features.pois.push({
+                        geometry: [
+                            f.geometry.coordinates[0],
+                            h,
+                            f.geometry.coordinates[1]
+                        ],
+                        properties: Object.assign({}, f.properties)
+                    });    
                 }
             }  
         }); 
