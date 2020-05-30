@@ -7,6 +7,7 @@ if(ctype_digit($x) && ctype_digit($y) && ctype_digit($z)) {
     echo file_get_contents("https://s3.amazonaws.com/elevation-tiles-prod/terrarium/$z/$x/$y.png");
 } else {
     header("HTTP/1.1 400 Bad Request");
-    echo "invalid x, y and/or z params";
+    header("Content-Type: application/json");
+    echo json_encode(["error" => "invalid x, y and/or z params"]);
 }
 ?>
