@@ -1,27 +1,18 @@
 require('aframe-osm-3d');
 require('./hikar-renderer');
 require('./vertical-controls');
+require('./pinch-detector');
 const jsfreemaplib = require('jsfreemaplib');
+const qs = require('querystring');
 
 
 window.onload = () => {
     let lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
 
     const parts = window.location.href.split('?');     
-    const get = { }
+    const get = parts.length === 2 ? qs.parse(parts[1]): { };
 
-    if(parts.length==2) {         
-        if(parts[1].endsWith('#')) {             
-            parts[1] = parts[1].slice(0, -1);         
-        }         
-        var params = parts[1].split('&');         
-        for(var i=0; i<params.length; i++) {   
-            var param = params[i].split('=');             
-            get[param[0]] = param[1];         
-        }     
-    }    
 
-    
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('svcw.js')
             .then(registration => {
@@ -44,10 +35,19 @@ window.onload = () => {
     }
     
 
+    const camera = document.querySelector('a-camera');
+    document.getElementById('fov').innerHTML = camera.getAttribute('fov');
+
     const osmElement = document.getElementById('osmElement');
     osmElement.addEventListener('hikar-status-change', e => {
         document.getElementById('status').innerHTML = e.detail.status;        
     });    
+    osmElement.addEventListener('nw-pinch', e => {
+        const fov = parseFloat(camera.getAttribute('fov')) + e.detail.direction * 10;
+        camera.setAttribute('fov', fov);
+        document.getElementById('fov').innerHTML = fov; 
+    });
+
     if(get.lat && get.lon) {
         osmElement.setAttribute('hikar-renderer', {
                     'position': {
@@ -58,6 +58,8 @@ window.onload = () => {
                 });
     } else {
         window.addEventListener('gps-camera-update-position', async(e)=> {
+            document.getElementById('lon').innerHTML = e.detail.position.longitude.toFixed(4);
+            document.getElementById('lat').innerHTML = e.detail.position.latitude.toFixed(4);
             const curTime = new Date().getTime();
             if(curTime - lastTime > 5000 && 
                 jsfreemaplib.haversineDist(

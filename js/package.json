@@ -1,12 +1,14 @@
 {
-    "name": "hikar",
-    "version": "0.0.200629",
+    "name": "hikar.js",
+    "version": "0.0.200814",
     "description": "Hikar - the webapp. Using AR.js.",
     "scripts": {
-        "install": "browserify index.js > bundle.js"
+        "build": "browserify index.js > bundle.js"
     },
     "dependencies": {
-        "aframe-osm-3d": "^0.1.1"
+        "jsfreemaplib": "^0.3.1",
+        "aframe-osm-3d": "^0.2.0",
+        "querystring": "^0.2.0"
     },
     "author": "Nick Whitelegg",
     "license": "GPL-3.0",
