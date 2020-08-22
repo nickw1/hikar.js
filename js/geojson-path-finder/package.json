@@ -1,0 +1,60 @@
+{
+  "_from": "geojson-path-finder",
+  "_id": "geojson-path-finder@1.5.2",
+  "_inBundle": false,
+  "_integrity": "sha512-hQl9LTNpqYNUeVhiKwS92FXEw8gk/Tx6i1OD/L9UfxbWqtoS3zhD6ZzQPNTCgQsu50DhsC09VL5vub7I0j/hQg==",
+  "_location": "/geojson-path-finder",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "geojson-path-finder",
+    "name": "geojson-path-finder",
+    "escapedName": "geojson-path-finder",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/geojson-path-finder/-/geojson-path-finder-1.5.2.tgz",
+  "_shasum": "812cdfb43dc0732559fcae2cfe9e6c02b6ed02ca",
+  "_spec": "geojson-path-finder",
+  "_where": "/var/www/html/otv360/js",
+  "author": {
+    "name": "Per Liedman",
+    "email": "per@liedman.net"
+  },
+  "bugs": {
+    "url": "https://github.com/perliedman/geojson-path-finder/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "@turf/distance": "^6.0.1",
+    "@turf/explode": "^5.1.0",
+    "tap": "^12.0.0",
+    "tap-spec": "^5.0.0",
+    "tinyqueue": "^2.0.0",
+    "turf-point": "^2.0.1"
+  },
+  "deprecated": false,
+  "description": "Find shortest path through a network of GeoJSON",
+  "devDependencies": {},
+  "directories": {
+    "test": "test"
+  },
+  "homepage": "https://github.com/perliedman/geojson-path-finder",
+  "license": "ISC",
+  "main": "index.js",
+  "name": "geojson-path-finder",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/perliedman/geojson-path-finder.git"
+  },
+  "scripts": {
+    "test": "tap test/*.js | tap-spec"
+  },
+  "version": "1.5.2"
+}

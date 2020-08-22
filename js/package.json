@@ -1,19 +1,24 @@
 {
     "name": "hikar.js",
-    "version": "0.0.200814",
+    "version": "0.0.200822",
     "description": "Hikar - the webapp. Using AR.js.",
     "scripts": {
         "build": "browserify index.js > bundle.js"
     },
     "dependencies": {
         "jsfreemaplib": "^0.3.1",
-        "aframe-osm-3d": "^0.2.0",
-        "querystring": "^0.2.0"
+        "aframe-osm-3d": "^0.2.1",
+        "querystring": "^0.2.0",
+        "@turf/bearing": "^6.0.1",
+        "@turf/distance": "^6.0.1",
+        "@turf/explode": "^5.1.0",
+        "tinyqueue": "^2.0.0",
+        "turf-point": "^2.0.1"
     },
     "author": "Nick Whitelegg",
     "license": "GPL-3.0",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/nickw1/hikar.org.git"
+        "url": "git+https://github.com/nickw1/hikar.js.git"
     }
 }

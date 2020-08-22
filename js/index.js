@@ -2,16 +2,19 @@ require('aframe-osm-3d');
 require('./hikar-renderer');
 require('./vertical-controls');
 require('./pinch-detector');
+const SignpostManager = require('./SignpostManager');
 const jsfreemaplib = require('jsfreemaplib');
 const qs = require('querystring');
 
-
+require('./fake-loc');
+ 
 window.onload = () => {
     let lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
 
     const parts = window.location.href.split('?');     
-    const get = parts.length === 2 ? qs.parse(parts[1]): { };
+    const get = parts.length === 2 ? qs.parse(parts[1]): { lat: 51.0503, lon: -0.7264};
 
+    const sMgr = new SignpostManager();
 
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('svcw.js')
@@ -78,6 +81,21 @@ window.onload = () => {
                     'simulated' : false
                 });
             }
+            sMgr.updatePos([e.detail.position.longitude, e.detail.position.latitude]);
         });
     }
+
+    // Temporarily use 'fake' lon/lat from camera position
+    camera.addEventListener( "fake-loc-updated", e => {
+        document.getElementById('lon').innerHTML = e.detail.lon.toFixed(4);
+        document.getElementById('lat').innerHTML = e.detail.lat.toFixed(4);
+        const p = [e.detail.lon, e.detail.lat];
+        sMgr.updatePos(p);
+    });
+    
+
+    osmElement.addEventListener('osm-data-loaded', e=> {
+        console.log('osm-data-loaded');
+        sMgr.update(e.detail.rawWays, e.detail.pois);
+    });
 }

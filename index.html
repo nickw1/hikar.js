@@ -15,15 +15,16 @@
     <a-scene vr-mode-ui="enabled: false" renderer='antialias: true; alpha:true'>
         <div id='status'></div>
         <div id='hud'>
-			FOV<span id='fov'></span>
-			Lat<span id='lat'></span>
-			Lon<span id='lon'></span>
-			Alt<span id='alt'></span>
-		</div>
-        <a-camera id='camera1' near="0.1" far="50000" fov="80" gps-projected-camera rotation-reader vertical-controls wasd-controls="acceleration: 1300">
+            FOV<span id='fov'></span>
+            Lat<span id='lat'></span>
+            Lon<span id='lon'></span>
+            Alt<span id='alt'></span>
+        </div>
+        <!-- Remove component 'fake-loc' if you don't want to 'fake' GPS updates by moving around the world -->
+        <a-camera id='camera1' near="0.1" far="50000" fov="80" gps-projected-camera rotation-reader vertical-controls wasd-controls="acceleration: 1300" fake-loc>
         </a-camera>
         <a-entity arjs-webcam-texture></a-entity>
-        <a-entity id='osmElement' terrarium-dem='zoom: 13; url: proxy.php?x={x}&y={y}&z={z}' osm3d='url: https://hikar.org/fm/ws/tsvr.php?x={x}&y={y}&z={z}&way=highway&amp;poi=place,natural' hikar-renderer pinch-detector></a-entity>
+        <a-entity id='osmElement' terrarium-dem='zoom: 13; url: proxy.php?x={x}&y={y}&z={z}' osm3d='url: https://hikar.org/fm/ws/tsvr.php?x={x}&y={y}&z={z}&way=highway&amp;poi=place,natural,amenity,tourism' hikar-renderer pinch-detector></a-entity>
     </a-scene>
 </body>
 
