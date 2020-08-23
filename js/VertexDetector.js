@@ -1,6 +1,31 @@
 const turfDistance = require('@turf/distance').default;
 const turfPoint = require('turf-point');
 
+/*
+
+Note: my interpretation of the structure of the serialised graph:
+
+compactedCoordinates:
+map indexed by adjacent vertices, each entry containing
+full coords along the way but NOT the destination vertex itself
+
+compactedEdges:
+the properties of each edge
+
+compactedVertices:
+the distances/weights to adjoining vertices
+
+edgeData:
+edge properties from edgeDataReduceFn
+
+sourceVertices:
+the full original non-rounded coordinates for each vertex
+
+vertices:
+distance/weights to adjoining vertices (non-compacted version)
+
+*/
+
 class VertexDetector {
 
     constructor(pathFinder) {
@@ -10,12 +35,10 @@ class VertexDetector {
     findNearestVertex(p, junctionOnly = false) {
         const graph = this.pathFinder.serialize();
         const vertex = [ null, Number.MAX_VALUE ];
-        let nEdges;
 
         const vertices = junctionOnly ?
             Object.keys(graph.vertices).filter ( k => {
-                nEdges = Object.keys(graph.vertices[k]).length;
-                return nEdges >= 3 || nEdges == 1;
+                return Object.keys(graph.vertices[k]).length >= 3
             }) : Object.keys(graph.vertices);
 
         vertices

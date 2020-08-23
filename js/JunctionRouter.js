@@ -41,6 +41,8 @@ class JunctionRouter {
             edgeDataReduceFn: (seed, props) => {
                 return {
                     highway: props.highway,
+                    foot: props.foot,
+                    designation: props.designation,
                     isAccessiblePath: ([
                         'footway', 
                         'bridleway', 
@@ -85,30 +87,32 @@ class JunctionRouter {
             snappedNodes[0] = this.vDet.snapToVertex(curPt, this.distThreshold, true);
         }
         pois.forEach(p => {
-            p.lon = parseFloat(p.lon);
-            p.lat = parseFloat(p.lat);
-            console.log(`Routing to POI ${p.properties.name} at ${p.lon},${p.lat}`);
-            p.bearing = 720;
-            snappedNodes[1] = options.snapPois ? this.vDet.snapToVertex([p.lon, p.lat], this.poiDistThreshold, false) : [p.lon, p.lat];
+            if(p.properties.name !== undefined) {
+                p.lon = parseFloat(p.lon);
+                p.lat = parseFloat(p.lat);
+                //console.log(`Routing to POI ${p.properties.name} at ${p.lon},${p.lat}`);
+                p.bearing = 720;
+                snappedNodes[1] = options.snapPois ? this.vDet.snapToVertex([p.lon, p.lat], this.poiDistThreshold, false) : [p.lon, p.lat];
                         
-            const route = this.calcPath(snappedNodes);
+                const route = this.calcPath(snappedNodes);
 
-            if(route!=null && route.path.length>=2 && route.edgeDatas[0].reducedEdge.isAccessiblePath) {
-                console.log(`Route ${JSON.stringify(route)}`);
-                // Initial bearing of the route (for OTV arrows, Hikar signposts, etc) - rounded to nearest degree
-                let bearing = Math.round(
-                    turfBearing(
-                        turfPoint(route.path[0]), 
-                        turfPoint(route.path[1])
-                    )
-                );
+                if(route!=null && route.path.length>=2 && route.edgeDatas[0].reducedEdge.isAccessiblePath) {
+                    //console.log(`Route ${JSON.stringify(route)}`);
+                    // Initial bearing of the route (for OTV arrows, Hikar signposts, etc) - rounded to nearest degree
+                    let bearing = Math.round(
+                        turfBearing(
+                            turfPoint(route.path[0]), 
+                            turfPoint(route.path[1])
+                        )
+                    );
 
-                if(bearing < 0) bearing += 360;
-                p.bearing = bearing;
-                p.weight = route.weight;
+                    if(bearing < 0) bearing += 360;
+                    p.bearing = bearing;
+                    p.weight = route.weight;
 
-                // save the path so we can do something with it 
-                p.path = route.path;
+                    // save the path so we can do something with it 
+                    p.path = route.path;
+                }
             }
         });
         // Sort routes to each POI based on bearing

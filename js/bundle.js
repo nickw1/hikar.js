@@ -13937,6 +13937,8 @@ class JunctionRouter {
             edgeDataReduceFn: (seed, props) => {
                 return {
                     highway: props.highway,
+                    foot: props.foot,
+                    designation: props.designation,
                     isAccessiblePath: ([
                         'footway', 
                         'bridleway', 
@@ -13981,30 +13983,32 @@ class JunctionRouter {
             snappedNodes[0] = this.vDet.snapToVertex(curPt, this.distThreshold, true);
         }
         pois.forEach(p => {
-            p.lon = parseFloat(p.lon);
-            p.lat = parseFloat(p.lat);
-            console.log(`Routing to POI ${p.properties.name} at ${p.lon},${p.lat}`);
-            p.bearing = 720;
-            snappedNodes[1] = options.snapPois ? this.vDet.snapToVertex([p.lon, p.lat], this.poiDistThreshold, false) : [p.lon, p.lat];
+            if(p.properties.name !== undefined) {
+                p.lon = parseFloat(p.lon);
+                p.lat = parseFloat(p.lat);
+                //console.log(`Routing to POI ${p.properties.name} at ${p.lon},${p.lat}`);
+                p.bearing = 720;
+                snappedNodes[1] = options.snapPois ? this.vDet.snapToVertex([p.lon, p.lat], this.poiDistThreshold, false) : [p.lon, p.lat];
                         
-            const route = this.calcPath(snappedNodes);
+                const route = this.calcPath(snappedNodes);
 
-            if(route!=null && route.path.length>=2 && route.edgeDatas[0].reducedEdge.isAccessiblePath) {
-                console.log(`Route ${JSON.stringify(route)}`);
-                // Initial bearing of the route (for OTV arrows, Hikar signposts, etc) - rounded to nearest degree
-                let bearing = Math.round(
-                    turfBearing(
-                        turfPoint(route.path[0]), 
-                        turfPoint(route.path[1])
-                    )
-                );
+                if(route!=null && route.path.length>=2 && route.edgeDatas[0].reducedEdge.isAccessiblePath) {
+                    //console.log(`Route ${JSON.stringify(route)}`);
+                    // Initial bearing of the route (for OTV arrows, Hikar signposts, etc) - rounded to nearest degree
+                    let bearing = Math.round(
+                        turfBearing(
+                            turfPoint(route.path[0]), 
+                            turfPoint(route.path[1])
+                        )
+                    );
 
-                if(bearing < 0) bearing += 360;
-                p.bearing = bearing;
-                p.weight = route.weight;
+                    if(bearing < 0) bearing += 360;
+                    p.bearing = bearing;
+                    p.weight = route.weight;
 
-                // save the path so we can do something with it 
-                p.path = route.path;
+                    // save the path so we can do something with it 
+                    p.path = route.path;
+                }
             }
         });
         // Sort routes to each POI based on bearing
@@ -14168,7 +14172,7 @@ class SignpostManager {
                 properties: Object.assign({}, f.properties),
                 geometry: {
                     type: 'LineString',
-                    coordinates: f.geometry.coordinates.map ( coord => this.sphMerc.unproject(coord))
+                    coordinates: f.geometry.coordinates.map ( coord => this.sphMerc.unproject(coord).concat(coord[2]))
                 }
             }
         });
@@ -14189,26 +14193,27 @@ class SignpostManager {
             return null;
         } 
         this.lastPos = [p[0], p[1]];
-        const nearestPois = this.pois.filter ( poi => turfDistance(turfPoint([poi.lon, poi.lat]), tp) < 5);
         const j = this.jr.isJunction(p);
         if(j) {
-            console.log('**** JUNCTION ****');
             const jKey = `${j[0][0].toFixed(5)},${j[0][1].toFixed(5)}`;
+            console.log(`**** JUNCTION **** key=${jKey}`);
             if(this.signposts[jKey]) {
+                console.log('This junction already exists - not doing anything else');
                 return null; // existing signpost present 
             } else {
+                const nearestPois = this.pois.filter ( poi => turfDistance(turfPoint([poi.lon, poi.lat]), tp) < 5);
                 const groupedPois = this.jr.route(
                     j[0],     
                     nearestPois, { 
                         snapToJunction: false, 
                         snapPois: true     
                     } );
-                console.log('**** groupedPOIs: ****');
-                console.log(groupedPois);
+                //console.log('**** groupedPOIs: ****');
+                //console.log(groupedPois);
 
                 const curPoint = turfPoint(j[0]);
                 const signpost = { };
-                console.log(JSON.stringify(Object.keys(j[1])));
+                //console.log(JSON.stringify(Object.keys(j[1])));
                 Object.keys(j[1])
                     .filter (k => j[1][k].properties.isAccessiblePath == true)
                     .forEach ( k => {
@@ -14216,18 +14221,23 @@ class SignpostManager {
                             j[1][k].coords[1]
                         )));
                         if(bearing < 0) bearing += 360;
-                        signpost[bearing] = [ ];
+                        signpost[bearing] = { 
+                            properties: j[1][k].properties,
+                            pois: [ ]
+                        };
                 });
                 groupedPois
                     .filter ( group => signpost[group.bearing] !== undefined)
                     .forEach ( group => {    
-                        signpost[group.bearing] = group.pois
-                             .filter(poi => poi.properties.name).slice(0); 
+                        signpost[group.bearing].pois = group.pois.slice(0);
                 });
                 console.log('FINAL SIGNPOST');
                 console.log(signpost);
                 this.signposts[jKey] = signpost;
-                return signpost; // created a signpost - return it  
+                return Object.keys(signpost).length > 0 ? {
+                    signpost: signpost, // created a signpost - return it  
+                    position: j[0]
+                } : null;
             }
         }
         return null; // not a junction
@@ -14240,6 +14250,31 @@ module.exports = SignpostManager;
 const turfDistance = require('@turf/distance').default;
 const turfPoint = require('turf-point');
 
+/*
+
+Note: my interpretation of the structure of the serialised graph:
+
+compactedCoordinates:
+map indexed by adjacent vertices, each entry containing
+full coords along the way but NOT the destination vertex itself
+
+compactedEdges:
+the properties of each edge
+
+compactedVertices:
+the distances/weights to adjoining vertices
+
+edgeData:
+edge properties from edgeDataReduceFn
+
+sourceVertices:
+the full original non-rounded coordinates for each vertex
+
+vertices:
+distance/weights to adjoining vertices (non-compacted version)
+
+*/
+
 class VertexDetector {
 
     constructor(pathFinder) {
@@ -14249,12 +14284,10 @@ class VertexDetector {
     findNearestVertex(p, junctionOnly = false) {
         const graph = this.pathFinder.serialize();
         const vertex = [ null, Number.MAX_VALUE ];
-        let nEdges;
 
         const vertices = junctionOnly ?
             Object.keys(graph.vertices).filter ( k => {
-                nEdges = Object.keys(graph.vertices[k]).length;
-                return nEdges >= 3 || nEdges == 1;
+                return Object.keys(graph.vertices[k]).length >= 3
             }) : Object.keys(graph.vertices);
 
         vertices
@@ -14540,7 +14573,6 @@ PathFinder.prototype = {
         var start = this._keyFn(roundCoord(a.geometry.coordinates, this._precision)),
             finish = this._keyFn(roundCoord(b.geometry.coordinates, this._precision));
 
-        console.log(`Start ${JSON.stringify(start)} Finish ${JSON.stringify(finish)}`);
         // We can't find a path if start or finish isn't in the
         // set of non-compacted vertices
         if (!this._graph.vertices[start] || !this._graph.vertices[finish]) {
@@ -14891,6 +14923,61 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                 console.error('gps-projected-camera not initialised yet.');
             }
         });
+
+        this.el.addEventListener('new-signpost', e=> {
+            const signpost = e.detail.signpost.signpost;
+            const signpostEntity = document.createElement('a-entity');
+            const signpostPostEntity = document.createElement('a-entity');
+            const world = camera.components['gps-projected-camera'].latLonToWorld(e.detail.signpost.position[1], e.detail.signpost.position[0]);
+            signpostPostEntity.setAttribute('obj-model', {
+                obj: '#signpost-obj'
+            });
+            signpostPostEntity.setAttribute('material', {
+                src: '#signpost-texture'
+            });
+            Object.keys(signpost).forEach ( bearing => {
+                if(signpost[bearing].properties.highway != 'service' || 
+                    signpost[bearing].pois.length > 0 || [
+                        'yes', 
+                        'designated', 
+                        'permissive'
+                    ].indexOf(signpost[bearing].foot) >= 0 || [
+                        'public_footpath', 
+                        'public_bridleway', 
+                        'restricted_byway', 
+                        'byway_open_to_all_traffic'
+                    ].indexOf(signpost[bearing].properties.designation) >= 0) {
+                    console.log(`Creating arm: BEARING ${bearing}`);
+                    const signpostArmEntity = document.createElement('a-entity');
+                    signpostArmEntity.setAttribute('obj-model', {
+                        obj: '#signpost-arm-obj'
+                    });
+                    signpostArmEntity.setAttribute('material', {
+                        src: '#signpost-texture'
+                    });
+                    // In model, arm points along positive z
+                    let glBearing = -(parseFloat(bearing) - 180); 
+                    signpostArmEntity.setAttribute('rotation', {
+                        x: 0,
+                        y: glBearing, 
+                        z: 0
+                    });
+                    signpostEntity.appendChild(signpostArmEntity);
+                }
+            });
+            signpostEntity.appendChild(signpostPostEntity);
+            signpostEntity.setAttribute('position', {
+                x: world[0],
+                y: e.detail.signpost.position[2],
+                z: world[1] 
+            });
+            signpostEntity.setAttribute('scale', {
+                x: 0.1, 
+                y: 0.1, 
+                z: 0.1
+            });
+            this.el.appendChild(signpostEntity);
+        });
     },
 
     update: function() {
@@ -14924,6 +15011,8 @@ const jsfreemaplib = require('jsfreemaplib');
 const qs = require('querystring');
 
 require('./fake-loc');
+
+let sMgr, osmElement;
  
 window.onload = () => {
     let lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
@@ -14931,7 +15020,7 @@ window.onload = () => {
     const parts = window.location.href.split('?');     
     const get = parts.length === 2 ? qs.parse(parts[1]): { lat: 51.0503, lon: -0.7264};
 
-    const sMgr = new SignpostManager();
+    sMgr = new SignpostManager();
 
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('svcw.js')
@@ -14958,7 +15047,7 @@ window.onload = () => {
     const camera = document.querySelector('a-camera');
     document.getElementById('fov').innerHTML = camera.getAttribute('fov');
 
-    const osmElement = document.getElementById('osmElement');
+    osmElement = document.getElementById('osmElement');
     osmElement.addEventListener('hikar-status-change', e => {
         document.getElementById('status').innerHTML = e.detail.status;        
     });    
@@ -14978,8 +15067,6 @@ window.onload = () => {
                 });
     } else {
         window.addEventListener('gps-camera-update-position', async(e)=> {
-            document.getElementById('lon').innerHTML = e.detail.position.longitude.toFixed(4);
-            document.getElementById('lat').innerHTML = e.detail.position.latitude.toFixed(4);
             const curTime = new Date().getTime();
             if(curTime - lastTime > 5000 && 
                 jsfreemaplib.haversineDist(
@@ -14998,16 +15085,13 @@ window.onload = () => {
                     'simulated' : false
                 });
             }
-            sMgr.updatePos([e.detail.position.longitude, e.detail.position.latitude]);
+            updatePos(e.detail.position.longitude, e.detail.position.latitude);
         });
     }
 
     // Temporarily use 'fake' lon/lat from camera position
     camera.addEventListener( "fake-loc-updated", e => {
-        document.getElementById('lon').innerHTML = e.detail.lon.toFixed(4);
-        document.getElementById('lat').innerHTML = e.detail.lat.toFixed(4);
-        const p = [e.detail.lon, e.detail.lat];
-        sMgr.updatePos(p);
+        updatePos(e.detail.lon, e.detail.lat);
     });
     
 
@@ -15015,6 +15099,17 @@ window.onload = () => {
         console.log('osm-data-loaded');
         sMgr.update(e.detail.rawWays, e.detail.pois);
     });
+}
+
+function updatePos(lon, lat) {
+    document.getElementById('lon').innerHTML = lon.toFixed(4);
+    document.getElementById('lat').innerHTML = lat.toFixed(4);
+    const sign = sMgr.updatePos([lon, lat]);
+    if(sign !== null) {
+        osmElement.emit('new-signpost', {
+            signpost: sign
+        });
+    }
 }
 
 },{"./SignpostManager":53,"./fake-loc":55,"./hikar-renderer":62,"./pinch-detector":109,"./vertical-controls":110,"aframe-osm-3d":72,"jsfreemaplib":84,"querystring":31}],64:[function(require,module,exports){
@@ -18122,6 +18217,7 @@ AFRAME.registerSystem('osm3d', {
                 f.geometry.coordinates.forEach (coord=> {
             
                     const h = dem? dem.getHeight(coord[0], coord[1]) : 0;
+                    coord[2] = h; // raw geojson will contain elevations
                     if (h >= 0) {
                         line.push([coord[0], h, -coord[1]]);
                     }

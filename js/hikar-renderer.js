@@ -64,6 +64,61 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                 console.error('gps-projected-camera not initialised yet.');
             }
         });
+
+        this.el.addEventListener('new-signpost', e=> {
+            const signpost = e.detail.signpost.signpost;
+            const signpostEntity = document.createElement('a-entity');
+            const signpostPostEntity = document.createElement('a-entity');
+            const world = camera.components['gps-projected-camera'].latLonToWorld(e.detail.signpost.position[1], e.detail.signpost.position[0]);
+            signpostPostEntity.setAttribute('obj-model', {
+                obj: '#signpost-obj'
+            });
+            signpostPostEntity.setAttribute('material', {
+                src: '#signpost-texture'
+            });
+            Object.keys(signpost).forEach ( bearing => {
+                if(signpost[bearing].properties.highway != 'service' || 
+                    signpost[bearing].pois.length > 0 || [
+                        'yes', 
+                        'designated', 
+                        'permissive'
+                    ].indexOf(signpost[bearing].foot) >= 0 || [
+                        'public_footpath', 
+                        'public_bridleway', 
+                        'restricted_byway', 
+                        'byway_open_to_all_traffic'
+                    ].indexOf(signpost[bearing].properties.designation) >= 0) {
+                    console.log(`Creating arm: BEARING ${bearing}`);
+                    const signpostArmEntity = document.createElement('a-entity');
+                    signpostArmEntity.setAttribute('obj-model', {
+                        obj: '#signpost-arm-obj'
+                    });
+                    signpostArmEntity.setAttribute('material', {
+                        src: '#signpost-texture'
+                    });
+                    // In model, arm points along positive z
+                    let glBearing = -(parseFloat(bearing) - 180); 
+                    signpostArmEntity.setAttribute('rotation', {
+                        x: 0,
+                        y: glBearing, 
+                        z: 0
+                    });
+                    signpostEntity.appendChild(signpostArmEntity);
+                }
+            });
+            signpostEntity.appendChild(signpostPostEntity);
+            signpostEntity.setAttribute('position', {
+                x: world[0],
+                y: e.detail.signpost.position[2],
+                z: world[1] 
+            });
+            signpostEntity.setAttribute('scale', {
+                x: 0.1, 
+                y: 0.1, 
+                z: 0.1
+            });
+            this.el.appendChild(signpostEntity);
+        });
     },
 
     update: function() {

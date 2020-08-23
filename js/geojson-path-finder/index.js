@@ -33,7 +33,6 @@ PathFinder.prototype = {
         var start = this._keyFn(roundCoord(a.geometry.coordinates, this._precision)),
             finish = this._keyFn(roundCoord(b.geometry.coordinates, this._precision));
 
-        console.log(`Start ${JSON.stringify(start)} Finish ${JSON.stringify(finish)}`);
         // We can't find a path if start or finish isn't in the
         // set of non-compacted vertices
         if (!this._graph.vertices[start] || !this._graph.vertices[finish]) {

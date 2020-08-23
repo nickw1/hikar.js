@@ -7,6 +7,8 @@ const jsfreemaplib = require('jsfreemaplib');
 const qs = require('querystring');
 
 require('./fake-loc');
+
+let sMgr, osmElement;
  
 window.onload = () => {
     let lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
@@ -14,7 +16,7 @@ window.onload = () => {
     const parts = window.location.href.split('?');     
     const get = parts.length === 2 ? qs.parse(parts[1]): { lat: 51.0503, lon: -0.7264};
 
-    const sMgr = new SignpostManager();
+    sMgr = new SignpostManager();
 
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('svcw.js')
@@ -41,7 +43,7 @@ window.onload = () => {
     const camera = document.querySelector('a-camera');
     document.getElementById('fov').innerHTML = camera.getAttribute('fov');
 
-    const osmElement = document.getElementById('osmElement');
+    osmElement = document.getElementById('osmElement');
     osmElement.addEventListener('hikar-status-change', e => {
         document.getElementById('status').innerHTML = e.detail.status;        
     });    
@@ -61,8 +63,6 @@ window.onload = () => {
                 });
     } else {
         window.addEventListener('gps-camera-update-position', async(e)=> {
-            document.getElementById('lon').innerHTML = e.detail.position.longitude.toFixed(4);
-            document.getElementById('lat').innerHTML = e.detail.position.latitude.toFixed(4);
             const curTime = new Date().getTime();
             if(curTime - lastTime > 5000 && 
                 jsfreemaplib.haversineDist(
@@ -81,16 +81,13 @@ window.onload = () => {
                     'simulated' : false
                 });
             }
-            sMgr.updatePos([e.detail.position.longitude, e.detail.position.latitude]);
+            updatePos(e.detail.position.longitude, e.detail.position.latitude);
         });
     }
 
     // Temporarily use 'fake' lon/lat from camera position
     camera.addEventListener( "fake-loc-updated", e => {
-        document.getElementById('lon').innerHTML = e.detail.lon.toFixed(4);
-        document.getElementById('lat').innerHTML = e.detail.lat.toFixed(4);
-        const p = [e.detail.lon, e.detail.lat];
-        sMgr.updatePos(p);
+        updatePos(e.detail.lon, e.detail.lat);
     });
     
 
@@ -98,4 +95,15 @@ window.onload = () => {
         console.log('osm-data-loaded');
         sMgr.update(e.detail.rawWays, e.detail.pois);
     });
+}
+
+function updatePos(lon, lat) {
+    document.getElementById('lon').innerHTML = lon.toFixed(4);
+    document.getElementById('lat').innerHTML = lat.toFixed(4);
+    const sign = sMgr.updatePos([lon, lat]);
+    if(sign !== null) {
+        osmElement.emit('new-signpost', {
+            signpost: sign
+        });
+    }
 }
