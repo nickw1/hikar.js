@@ -14,6 +14,23 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
         this.gettingData = false;
         this.simulatedGps = false;
 
+        this.armTextProps = [
+            [-0.4, -90, 'left'],
+            [0.4, 90, 'right']
+        ]; 
+
+        this.displayedRouteTypes = {
+            footway : 'Path',
+            path: 'Path',
+            steps: 'Path (with steps)',
+            bridleway: 'Bridleway',
+            cycleway: 'Cycle Path',
+            public_footpath: 'Public Footpath',
+            public_bridleway: 'Public Bridleway',
+            byway_open_to_all_traffic: 'Byway',
+            restricted_byway: 'Restricted Byway'
+        };
+    
         const camera = document.querySelector("a-camera");
         this.el.addEventListener('terrarium-dem-loaded', async(e) => {
             const position = camera.getAttribute("position");
@@ -77,17 +94,9 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                 src: '#signpost-texture'
             });
             Object.keys(signpost).forEach ( bearing => {
-                if(signpost[bearing].properties.highway != 'service' || 
-                    signpost[bearing].pois.length > 0 || [
-                        'yes', 
-                        'designated', 
-                        'permissive'
-                    ].indexOf(signpost[bearing].foot) >= 0 || [
-                        'public_footpath', 
-                        'public_bridleway', 
-                        'restricted_byway', 
-                        'byway_open_to_all_traffic'
-                    ].indexOf(signpost[bearing].properties.designation) >= 0) {
+                const text = this._getRenderedText(signpost[bearing]);
+                console.log(text);
+                if(text !== null) {
                     console.log(`Creating arm: BEARING ${bearing}`);
                     const signpostArmEntity = document.createElement('a-entity');
                     signpostArmEntity.setAttribute('obj-model', {
@@ -96,13 +105,41 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                     signpostArmEntity.setAttribute('material', {
                         src: '#signpost-texture'
                     });
+
+                    const scaleFactor = signpost[bearing].pois.length > 0 ? 1: 2;
+                    for(let i=0; i<2; i++) {
+                        const textEntity = document.createElement('a-text');
+                        textEntity.setAttribute('value', text);
+                        textEntity.setAttribute('position', {
+                            x : this.armTextProps[i][0], 
+                            y : 23,
+                            z : 2
+                        });
+                        textEntity.setAttribute('rotation', {
+                            x : 0, 
+                            y : this.armTextProps[i][1], 
+                            z : 0
+                        });
+                        textEntity.setAttribute('scale', {
+                            x: scaleFactor,
+                            y: scaleFactor,
+                            z: scaleFactor 
+                        });
+                        textEntity.setAttribute('anchor', this.armTextProps[i][2]);
+                        textEntity.setAttribute('width', 60);
+                        textEntity.setAttribute('height', 14);
+                        signpostArmEntity.appendChild(textEntity);
+                    }
+
                     // In model, arm points along positive z
                     let glBearing = -(parseFloat(bearing) - 180); 
+                    
                     signpostArmEntity.setAttribute('rotation', {
                         x: 0,
                         y: glBearing, 
                         z: 0
                     });
+                    
                     signpostEntity.appendChild(signpostArmEntity);
                 }
             });
@@ -139,5 +176,19 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                 lat: lat
             });
         }
+    },
+
+    _getRenderedText: function(arm) {
+        if(arm.pois.length > 0) {
+            return arm.pois.slice(0, 3).map ( poi => `${poi.properties.name} ${poi.weight.toFixed(2)} km`).join("\n");
+        } else if (arm.properties.designation) {
+            return this.displayedRouteTypes[arm.properties.designation] || null;
+        } else if (arm.properties.highway) {
+            return ['track', 'service'].indexOf(arm.properties.highway) == -1  ?
+                this.displayedRouteTypes[arm.properties.highway] || null :
+                (['yes', 'designated', 'permissive']
+                    .indexOf(arm.properties.foot) >= 0 ? "Route with public access": null);
+        }
+        return null; 
     }
 });
