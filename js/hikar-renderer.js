@@ -84,15 +84,8 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
 
         this.el.addEventListener('new-signpost', e=> {
             const signpost = e.detail.signpost.signpost;
-            const signpostEntity = document.createElement('a-entity');
-            const signpostPostEntity = document.createElement('a-entity');
             const world = camera.components['gps-projected-camera'].latLonToWorld(e.detail.signpost.position[1], e.detail.signpost.position[0]);
-            signpostPostEntity.setAttribute('obj-model', {
-                obj: '#signpost-obj'
-            });
-            signpostPostEntity.setAttribute('material', {
-                src: '#signpost-texture'
-            });
+            const signpostArmEntities = [];
             Object.keys(signpost).forEach ( bearing => {
                 const text = this._getRenderedText(signpost[bearing]);
                 console.log(text);
@@ -140,21 +133,35 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                         z: 0
                     });
                     
-                    signpostEntity.appendChild(signpostArmEntity);
+                    signpostArmEntities.push(signpostArmEntity);
                 }
             });
-            signpostEntity.appendChild(signpostPostEntity);
-            signpostEntity.setAttribute('position', {
-                x: world[0],
-                y: e.detail.signpost.position[2],
-                z: world[1] 
-            });
-            signpostEntity.setAttribute('scale', {
-                x: 0.1, 
-                y: 0.1, 
-                z: 0.1
-            });
-            this.el.appendChild(signpostEntity);
+
+            if(signpostArmEntities.length > 0) {
+                const signpostEntity = document.createElement('a-entity');
+                const signpostPostEntity = document.createElement('a-entity');
+                signpostPostEntity.setAttribute('obj-model', {
+                    obj: '#signpost-obj'
+                });
+                signpostPostEntity.setAttribute('material', {
+                    src: '#signpost-texture'
+                });
+                signpostEntity.appendChild(signpostPostEntity);
+                signpostEntity.setAttribute('position', {
+                    x: world[0],
+                    y: e.detail.signpost.position[2],
+                    z: world[1] 
+                });
+                signpostEntity.setAttribute('scale', {
+                    x: 0.1, 
+                    y: 0.1, 
+                    z: 0.1
+                });
+                signpostArmEntities.forEach (armEntity => {
+                    signpostEntity.appendChild(armEntity);
+                });
+                this.el.appendChild(signpostEntity);
+            }
         });
     },
 
