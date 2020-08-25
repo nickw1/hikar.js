@@ -88,7 +88,6 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
             const signpostArmEntities = [];
             Object.keys(signpost).forEach ( bearing => {
                 const text = this._getRenderedText(signpost[bearing]);
-                console.log(text);
                 if(text !== null) {
                     console.log(`Creating arm: BEARING ${bearing}`);
                     const signpostArmEntity = document.createElement('a-entity');
@@ -103,6 +102,9 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                     for(let i=0; i<2; i++) {
                         const textEntity = document.createElement('a-text');
                         textEntity.setAttribute('value', text);
+                        textEntity.setAttribute('font', "assets/Roboto-Regular-msdf.json");
+                        textEntity.setAttribute('font-image', "assets/Roboto-Regular.png");
+                        textEntity.setAttribute('negate', false); 
                         textEntity.setAttribute('position', {
                             x : this.armTextProps[i][0], 
                             y : 23,
