@@ -113,7 +113,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                         textEntity.setAttribute('position', {
                             x : this.armTextProps[i][0], 
                             y : 23,
-                            z : 2
+                            z : 2 
                         });
                         textEntity.setAttribute('rotation', {
                             x : 0, 
@@ -125,7 +125,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                             y: scaleFactor,
                             z: scaleFactor 
                         });
-                        textEntity.setAttribute('anchor', this.armTextProps[i][2]);
+                        textEntity.setAttribute('anchor', i == 1 && scaleFactor > 1 ? 'center' : this.armTextProps[i][2]);
                         textEntity.setAttribute('width', 60);
                         textEntity.setAttribute('height', 14);
                         signpostArmEntity.appendChild(textEntity);
