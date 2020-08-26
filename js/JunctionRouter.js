@@ -31,6 +31,11 @@ class JunctionRouter {
     constructor(options = { }) {
         this.distThreshold = options.distThreshold || 0.02;
         this.poiDistThreshold = options.poiDistThreshold || 0.1;
+        this.vDet = null;
+    }
+
+    hasData() {
+        return this.vDet !== null;
     }
 
     // Update with new geojson before attempting to route

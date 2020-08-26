@@ -8,13 +8,13 @@ const qs = require('querystring');
 
 require('./fake-loc');
 
-let sMgr, osmElement;
+let sMgr, osmElement, osmHasLoaded = false;
  
 window.onload = () => {
     let lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
 
     const parts = window.location.href.split('?');     
-    const get = parts.length === 2 ? qs.parse(parts[1]): { lat: 51.0503, lon: -0.7264};
+    const get = parts.length === 2 ? qs.parse(parts[1]): { };
 
     sMgr = new SignpostManager();
 
@@ -93,17 +93,25 @@ window.onload = () => {
 
     osmElement.addEventListener('osm-data-loaded', e=> {
         console.log('osm-data-loaded');
-        sMgr.update(e.detail.rawWays, e.detail.pois);
+        osmHasLoaded = true;
     });
 }
 
 function updatePos(lon, lat) {
     document.getElementById('lon').innerHTML = lon.toFixed(4);
     document.getElementById('lat').innerHTML = lat.toFixed(4);
-    const sign = sMgr.updatePos([lon, lat]);
-    if(sign !== null) {
-        osmElement.emit('new-signpost', {
-            signpost: sign
-        });
+    if(osmHasLoaded) {
+        const data = osmElement.components.osm3d.getCurrentRawData(lon, lat);
+        if(data !== null) {
+            alert(`Updating routing graph with ${data.ways.length} ways and ${data.pois.length} POIs.`);
+            sMgr.update(data.ways, data.pois);
+        }
+    
+        const sign = sMgr.updatePos([lon, lat]);
+        if(sign !== null) {
+            osmElement.emit('new-signpost', {
+                signpost: sign
+            });
+        }
     }
 }

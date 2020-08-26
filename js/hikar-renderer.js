@@ -102,6 +102,8 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                     for(let i=0; i<2; i++) {
                         const textEntity = document.createElement('a-text');
                         textEntity.setAttribute('value', text);
+
+                        // Note: font JSON and images cannot be put in A-Frame assets
                         textEntity.setAttribute('font', "assets/Roboto-Regular-msdf.json");
                         textEntity.setAttribute('font-image', "assets/Roboto-Regular.png");
                         textEntity.setAttribute('negate', false); 

@@ -41,7 +41,7 @@ class SignpostManager {
     updatePos(p) {
         const tp = turfPoint(p);
         // Only try to detect a junction if we've moved a certain distance
-        if(turfDistance(tp, turfPoint(this.lastPos)) < this.juncDetectDistChange) {
+        if(!this.jr.hasData() || turfDistance(tp, turfPoint(this.lastPos)) < this.juncDetectDistChange) {
             return null;
         } 
         this.lastPos = [p[0], p[1]];

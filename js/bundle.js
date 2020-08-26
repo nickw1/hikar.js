@@ -13927,6 +13927,11 @@ class JunctionRouter {
     constructor(options = { }) {
         this.distThreshold = options.distThreshold || 0.02;
         this.poiDistThreshold = options.poiDistThreshold || 0.1;
+        this.vDet = null;
+    }
+
+    hasData() {
+        return this.vDet !== null;
     }
 
     // Update with new geojson before attempting to route
@@ -14189,7 +14194,7 @@ class SignpostManager {
     updatePos(p) {
         const tp = turfPoint(p);
         // Only try to detect a junction if we've moved a certain distance
-        if(turfDistance(tp, turfPoint(this.lastPos)) < this.juncDetectDistChange) {
+        if(!this.jr.hasData() || turfDistance(tp, turfPoint(this.lastPos)) < this.juncDetectDistChange) {
             return null;
         } 
         this.lastPos = [p[0], p[1]];
@@ -14961,6 +14966,8 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                     for(let i=0; i<2; i++) {
                         const textEntity = document.createElement('a-text');
                         textEntity.setAttribute('value', text);
+
+                        // Note: font JSON and images cannot be put in A-Frame assets
                         textEntity.setAttribute('font', "assets/Roboto-Regular-msdf.json");
                         textEntity.setAttribute('font-image', "assets/Roboto-Regular.png");
                         textEntity.setAttribute('negate', false); 
@@ -15072,13 +15079,13 @@ const qs = require('querystring');
 
 require('./fake-loc');
 
-let sMgr, osmElement;
+let sMgr, osmElement, osmHasLoaded = false;
  
 window.onload = () => {
     let lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
 
     const parts = window.location.href.split('?');     
-    const get = parts.length === 2 ? qs.parse(parts[1]): { lat: 51.0503, lon: -0.7264};
+    const get = parts.length === 2 ? qs.parse(parts[1]): { };
 
     sMgr = new SignpostManager();
 
@@ -15157,18 +15164,26 @@ window.onload = () => {
 
     osmElement.addEventListener('osm-data-loaded', e=> {
         console.log('osm-data-loaded');
-        sMgr.update(e.detail.rawWays, e.detail.pois);
+        osmHasLoaded = true;
     });
 }
 
 function updatePos(lon, lat) {
     document.getElementById('lon').innerHTML = lon.toFixed(4);
     document.getElementById('lat').innerHTML = lat.toFixed(4);
-    const sign = sMgr.updatePos([lon, lat]);
-    if(sign !== null) {
-        osmElement.emit('new-signpost', {
-            signpost: sign
-        });
+    if(osmHasLoaded) {
+        const data = osmElement.components.osm3d.getCurrentRawData(lon, lat);
+        if(data !== null) {
+            alert(`Updating routing graph with ${data.ways.length} ways and ${data.pois.length} POIs.`);
+            sMgr.update(data.ways, data.pois);
+        }
+    
+        const sign = sMgr.updatePos([lon, lat]);
+        if(sign !== null) {
+            osmElement.emit('new-signpost', {
+                signpost: sign
+            });
+        }
     }
 }
 
@@ -18206,7 +18221,6 @@ module.exports = AFRAME.registerComponent('osm3d', {
             const data = await this.loadAndApplyDem(this.data.url, e.detail.demData);
             this.el.emit('osm-data-loaded', {
                 objectIds: data.newObjectIds,
-                rawWays: data.rawWays,
                 pois: data.pois
             });
         });
@@ -18215,21 +18229,25 @@ module.exports = AFRAME.registerComponent('osm3d', {
     loadAndApplyDem: async function(url, demData) {
         this.newObjectIds = [];
         const pois = [];
-        const rawWays = [];
+        let key;
 
         for(let i=0; i<demData.length; i++) {
             const osmDataJson = await this.system.loadData(url, demData[i].tile);
             if(osmDataJson != null) {
+                this.system.z = demData[i].tile.z; // assume zoom never changes
+                key = `${demData[i].tile.z}/${demData[i].tile.x}/${demData[i].tile.y}`;
                 const features = await this._applyDem(osmDataJson, demData[i]);
                 pois.push(...features.pois);
-                rawWays.push(...features.rawWays);
+                this.system.rawData[key] = {
+                    ways : features.rawWays,
+                    pois : features.pois
+                };
             }
         }
 
         return {
             newObjectIds: this.newObjectIds,
-            pois: pois,
-            rawWays: rawWays
+            pois: pois
         }; 
     },
 
@@ -18242,7 +18260,40 @@ module.exports = AFRAME.registerComponent('osm3d', {
             this.newObjectIds.push(f.properties.id);
         });
         return features;
-    }
+    },
+
+    getCurrentRawData: function(lon, lat) {
+        const tile = this.system.sphMerc.getTileFromLonLat(lon, lat, this.system.z);
+        if(this.system.curTile === null || tile.x != this.system.curTile.x || tile.y != this.system.curTile.y) {
+
+            const data = {
+                ways: [],
+                pois: []    
+            };
+
+            let key;
+            for(let x = tile.x - 1; x <= tile.x + 1; x++) {
+                for(let y = tile.y - 1; y <= tile.y + 1; y++) {
+                    key = `${this.system.z}/${x}/${y}`;
+                    if(this.system.rawData[key]) {
+                        data.ways.push(...this.system.rawData[key].ways);
+                        data.pois.push(...this.system.rawData[key].pois);
+                    }
+                }
+            }
+
+            if (data.ways.length > 0 || data.pois.length > 0) {
+            
+                this.system.curTile = {
+                    x: tile.x,
+                    y: tile.y
+                };
+
+                return data;
+            }
+        }
+        return null;
+    },
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -18267,6 +18318,11 @@ AFRAME.registerSystem('osm3d', {
             'motorway' : { }
         };
         this.sphMerc = new GoogleProjection();
+        this.rawData = {
+            ways: { },
+            pois: { }
+        };
+        this.curTile = null;
     },
 
     loadOsm: async function(osmDataJson, tileid, dem=null) {
@@ -18375,9 +18431,9 @@ AFRAME.registerSystem('osm3d', {
         realVertices.push(vertices[k][0] - dxperp);
         realVertices.push(vertices[k][1]);
         realVertices.push(vertices[k][2] - dzperp);
-        realVertices.push( vertices[k][0] + dxperp);
+        realVertices.push(vertices[k][0] + dxperp);
         realVertices.push(vertices[k][1]);
-        realVertices.push( vertices[k][2] + dzperp);
+        realVertices.push(vertices[k][2] + dzperp);
 
     
         let indices = [];
@@ -18521,7 +18577,6 @@ AFRAME.registerSystem('terrarium-dem', {
 
     _createDemGeometry: function(data) {
          const dem = data.data;
-		 console.log(data);
          const topRight = data.tile.getTopRight();
          const bottomLeft = dem.bottomLeft;
          const centre = [(topRight[0] + bottomLeft[0]) / 2, 

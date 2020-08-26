@@ -1,13 +1,13 @@
 {
     "name": "hikar.js",
-    "version": "0.0.200826",
+    "version": "0.0.200827",
     "description": "Hikar - the webapp. Using AR.js.",
     "scripts": {
         "build": "browserify index.js > bundle.js"
     },
     "dependencies": {
         "jsfreemaplib": "^0.3.1",
-        "aframe-osm-3d": "^0.2.3",
+        "aframe-osm-3d": "^0.2.4",
         "querystring": "^0.2.0",
         "@turf/bearing": "^6.0.1",
         "@turf/distance": "^6.0.1",
