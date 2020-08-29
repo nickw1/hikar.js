@@ -84,9 +84,11 @@ class SignpostManager {
                 groupedPois
                     .filter ( group => signpost[group.bearing] !== undefined)
                     .forEach ( group => {    
-                        signpost[group.bearing].pois = group.pois.slice(0);
+                        signpost[group.bearing].pois = group.pois
+                            .slice(0)
+                            .sort( (a,b) => a.dist * this._getWeighting(a.properties) - b.dist * this._getWeighting(b.properties) );
                 });
-                console.log('FINAL SIGNPOST');
+                console.log('FINAL SIGNPOST (SORTED!)');
                 console.log(signpost);
                 this.signposts[jKey] = signpost;
                 return Object.keys(signpost).length > 0 ? {
@@ -96,6 +98,35 @@ class SignpostManager {
             }
         }
         return null; // not a junction
+    }
+
+    _getWeighting(tags) {
+        if(["city", "town"].indexOf(tags["place"]) >= 0) {
+            return 0.75;
+        } else if (tags["place"] == "village") {
+            return 1.0;
+        } else if (tags["natural"] == "peak" && tags["peak"] == "minor") {
+            return 2.0;
+        } else if (tags["natural"] == "peak") {
+            return 1.25;
+        } else if (["alpine_hut", "hostel"].indexOf(tags["tourism"]) >= 0) {
+            return 1.25;
+        } else if (tags["tourism"] == "camp_site") {
+            return 1.5;
+        } else if (["hamlet", "suburb"].indexOf(tags["place"]) >= 0) {
+            return 1.5;
+        } else if (["pub", "cafe"].indexOf(tags["amenity"]) >= 0) {
+            return 2.0;
+        } else if (["restaurant"].indexOf(tags["amenity"]) >= 0) {
+            return 3.0;
+        } else if (tags["place"]) {
+            return 2.0;
+        } else if (tags["tourism"] == "viewpoint") {
+            return 2.0;
+        } else if (tags["railway"] == "station") {
+            return 1.25;
+        }
+        return 10.0; 
     }
 }
 
