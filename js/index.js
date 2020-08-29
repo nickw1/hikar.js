@@ -2,21 +2,20 @@ require('aframe-osm-3d');
 require('./hikar-renderer');
 require('./vertical-controls');
 require('./pinch-detector');
-const SignpostManager = require('./SignpostManager');
 const jsfreemaplib = require('jsfreemaplib');
 const qs = require('querystring');
 
 require('./fake-loc');
 
-let sMgr, osmElement, osmHasLoaded = false;
+let osmElement, osmHasLoaded = false, worker;
  
 window.onload = () => {
     let lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
 
+    worker = new Worker('js/bundleworker.js');
+
     const parts = window.location.href.split('?');     
     const get = parts.length === 2 ? qs.parse(parts[1]): { };
-
-    sMgr = new SignpostManager();
 
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('svcw.js')
@@ -53,6 +52,10 @@ window.onload = () => {
         document.getElementById('fov').innerHTML = fov; 
     });
 
+    osmElement.addEventListener('terrarium-dem-loaded', e=> {
+        //osmHasLoaded = false;
+    });
+
     if(get.lat && get.lon) {
         osmElement.setAttribute('hikar-renderer', {
                     'position': {
@@ -83,6 +86,10 @@ window.onload = () => {
             }
             updatePos(e.detail.position.longitude, e.detail.position.latitude);
         });
+
+        window.addEventListener('dist-moved', e=> {
+            document.getElementById('alt').innerHTML = e.detail.distMoved.toFixed(2);
+        });
     }
 
     // Temporarily use 'fake' lon/lat from camera position
@@ -95,6 +102,27 @@ window.onload = () => {
         console.log('osm-data-loaded');
         osmHasLoaded = true;
     });
+
+    worker.onmessage = e => {
+        switch(e.data.type) {
+            case 'dataUpdated':
+                document.getElementById('status').innerHTML = '';
+                break;
+
+            case 'processingJunction':
+                document.getElementById('status').innerHTML = 'Creating possible signpost...';
+                break;
+
+            case 'checkJunctionFinished': 
+                document.getElementById('status').innerHTML = '';
+                if(e.data.data !== null) {
+                    osmElement.emit('new-signpost', {
+                        signpost: e.data.data
+                    });
+                }
+                break;
+        }
+    }
 }
 
 function updatePos(lon, lat) {
@@ -103,15 +131,9 @@ function updatePos(lon, lat) {
     if(osmHasLoaded) {
         const data = osmElement.components.osm3d.getCurrentRawData(lon, lat);
         if(data !== null) {
-            alert(`Updating routing graph with ${data.ways.length} ways and ${data.pois.length} POIs.`);
-            sMgr.update(data.ways, data.pois);
+            document.getElementById('status').innerHTML = 'Loading data for routing...';
+            worker.postMessage({ type: 'updateData', data: data });
         }
-    
-        const sign = sMgr.updatePos([lon, lat]);
-        if(sign !== null) {
-            osmElement.emit('new-signpost', {
-                signpost: sign
-            });
-        }
+        worker.postMessage({ type: 'checkJunction', data: [lon, lat] });
     }
 }

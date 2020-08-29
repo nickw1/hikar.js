@@ -38,7 +38,7 @@ class SignpostManager {
         this.jr.update(unprojWays, this.pois);
     }
 
-    updatePos(p) {
+    updatePos(p, options = {}) {
         const tp = turfPoint(p);
         // Only try to detect a junction if we've moved a certain distance
         if(!this.jr.hasData() || turfDistance(tp, turfPoint(this.lastPos)) < this.juncDetectDistChange) {
@@ -53,6 +53,9 @@ class SignpostManager {
                 console.log('This junction already exists - not doing anything else');
                 return null; // existing signpost present 
             } else {
+                if(options.onStartProcessing) {
+                    options.onStartProcessing();
+                }
                 const nearestPois = this.pois.filter ( poi => turfDistance(turfPoint([poi.lon, poi.lat]), tp) < 5);
                 const groupedPois = this.jr.route(
                     j[0],     

@@ -98,7 +98,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                         src: '#signpost-texture'
                     });
 
-                    const scaleFactor = signpost[bearing].pois.length > 0 ? 1: 2;
+                    const scaleFactor = signpost[bearing].pois.length > 0 ? 1.2: 2;
                     for(let i=0; i<2; i++) {
                         const textEntity = document.createElement('a-text');
                         textEntity.setAttribute('value', text);
@@ -122,7 +122,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                             y: scaleFactor,
                             z: scaleFactor 
                         });
-                        textEntity.setAttribute('anchor', i == 1 && scaleFactor > 1 ? 'center' : this.armTextProps[i][2]);
+                        textEntity.setAttribute('anchor', i == 1 && scaleFactor > 1.2 ? 'center' : this.armTextProps[i][2]);
                         textEntity.setAttribute('width', 60);
                         textEntity.setAttribute('height', 14);
                         signpostArmEntity.appendChild(textEntity);
@@ -191,7 +191,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
 
     _getRenderedText: function(arm) {
         if(arm.pois.length > 0) {
-            return arm.pois.slice(0, 3).map ( poi => `${poi.properties.name} ${poi.weight.toFixed(2)} km`).join("\n");
+            return arm.pois.slice(0, 2).map ( poi => `${poi.properties.name} ${poi.weight.toFixed(2)} km`).join("\n");
         } else if (arm.properties.designation) {
             return this.displayedRouteTypes[arm.properties.designation] || null;
         } else if (arm.properties.highway) {
