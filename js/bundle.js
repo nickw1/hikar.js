@@ -14290,7 +14290,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
 
     _getRenderedText: function(arm) {
         if(arm.pois.length > 0) {
-            return arm.pois.slice(0, 2).map ( poi => `${poi.properties.name} ${poi.weight.toFixed(2)} km`).join("\n");
+            return arm.pois.slice(0, 2).map ( poi => `${poi.properties.name} ${poi.dist.toFixed(2)} km`).join("\n");
         } else if (arm.properties.designation) {
             return this.displayedRouteTypes[arm.properties.designation] || null;
         } else if (arm.properties.highway) {

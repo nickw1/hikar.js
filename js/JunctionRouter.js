@@ -43,28 +43,16 @@ class JunctionRouter {
         geojson = this.insertIntoNetwork(geojson, pois);
         this.pathFinder = new PathFinder(geojson, { 
             precision: 0.00001,    
+            weightFn: (a, b, props) => {
+                return jsFreemaplib.haversineDist(a[0], a[1], b[0], b[1]) * (this._isAccessiblePath(props) ? 1.0 : 1.25) * 0.001; // weighting is as for Hikar Android app 0.3.x
+            },
             edgeDataReduceFn: (seed, props) => {
                 return {
                     highway: props.highway,
                     foot: props.foot,
                     designation: props.designation,
-                    isAccessiblePath: ([
-                        'footway', 
-                        'bridleway', 
-                        'cycleway', 
-                        'path', 
-                        'steps', 
-                        'service', 
-                        'track'
-                    ].indexOf(props.highway) >= 0 && 
-                        props.access != 'private' &&
-                        props.foot != 'private') || [
-                        'public_footpath', 
-                        'public_bridleway', 
-                        'byway_open_to_all_traffic', 
-                        'restricted_byway'
-                    ].indexOf(props.designation) >= 0 
-                }
+                    isAccessiblePath: this._isAccessiblePath(props)
+                };
             }
         } );
         this.vDet = new VertexDetector(this.pathFinder);
@@ -117,6 +105,18 @@ class JunctionRouter {
 
                     // save the path so we can do something with it 
                     p.path = route.path;
+
+					// calculate the real distance of the path (weight is now
+					// adjusted - see above)
+					
+					p.dist = route.path.reduce ( (acc, val, index, arr) => {	
+						return index==0 ? 0 : acc + jsFreemaplib.haversineDist(
+							val[0],
+							val[1],
+							arr[index-1][0],
+							arr[index-1][1]
+						); 
+					}, 0) * 0.001;
                 }
             }
         });
@@ -138,6 +138,7 @@ class JunctionRouter {
             }
             curPOIsForThisBearing.pois.push({
                 weight: sorted[i].weight,
+                dist: sorted[i].dist,
                 path: sorted[i].path,
                 properties: sorted[i].properties
             });
@@ -249,6 +250,25 @@ class JunctionRouter {
         newWay.geometry.type =  'LineString';
         newWay.geometry.coordinates = [];
         return newWay;
+    }
+
+    _isAccessiblePath(props) {
+        return ([
+            'footway', 
+            'bridleway', 
+            'cycleway', 
+            'path', 
+            'steps', 
+            'service', 
+            'track'
+        ].indexOf(props.highway) >= 0 && 
+            props.access != 'private' &&
+            props.foot != 'private') || [
+                'public_footpath', 
+                'public_bridleway', 
+                'byway_open_to_all_traffic', 
+                'restricted_byway'
+        ].indexOf(props.designation) >= 0;
     }
 }
 
