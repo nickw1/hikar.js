@@ -52,7 +52,7 @@ class VertexDetector {
                     // Note - the compactedCoordinates do not include the destination vertex so we have to add it
                     Object.keys(graph.compactedCoordinates[k])
                         .forEach ( kk => {
-                            const dest = kk.split(',');
+                            const dest = graph.sourceVertices[kk].slice(0);
                             vertex[2][kk] = {
                                 coords : graph.compactedCoordinates[k][kk]
                                     .slice(0)
