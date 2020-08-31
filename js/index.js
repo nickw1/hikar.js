@@ -52,9 +52,6 @@ window.onload = () => {
         document.getElementById('fov').innerHTML = fov; 
     });
 
-    osmElement.addEventListener('terrarium-dem-loaded', e=> {
-        //osmHasLoaded = false;
-    });
 
     if(get.lat && get.lon) {
         osmElement.setAttribute('hikar-renderer', {
@@ -86,21 +83,32 @@ window.onload = () => {
             }
             updatePos(e.detail.position.longitude, e.detail.position.latitude);
         });
-
-        window.addEventListener('dist-moved', e=> {
-            document.getElementById('alt').innerHTML = e.detail.distMoved.toFixed(2);
-        });
     }
 
     // Temporarily use 'fake' lon/lat from camera position
     camera.addEventListener( "fake-loc-updated", e => {
+                osmElement.setAttribute('hikar-renderer', {
+                    'position': {
+                        x: e.detail.lon,
+                        y: e.detail.lat
+                    },
+                    'simulated' : false
+                });
         updatePos(e.detail.lon, e.detail.lat);
     });
     
 
     osmElement.addEventListener('osm-data-loaded', e=> {
-        console.log('osm-data-loaded');
         osmHasLoaded = true;
+        const data = osmElement.components.osm3d.getCurrentRawData();
+        if(data !== null) {
+            document.getElementById('status').innerHTML = 'Loading data for routing...';
+            worker.postMessage({ type: 'updateData', data: data });
+        }
+    });
+
+    osmElement.addEventListener('elevation-available', e=> {
+        document.getElementById('alt').innerHTML = Math.round(e.detail.elevation);
     });
 
     worker.onmessage = e => {
@@ -129,11 +137,6 @@ function updatePos(lon, lat) {
     document.getElementById('lon').innerHTML = lon.toFixed(4);
     document.getElementById('lat').innerHTML = lat.toFixed(4);
     if(osmHasLoaded) {
-        const data = osmElement.components.osm3d.getCurrentRawData(lon, lat);
-        if(data !== null) {
-            document.getElementById('status').innerHTML = 'Loading data for routing...';
-            worker.postMessage({ type: 'updateData', data: data });
-        }
         worker.postMessage({ type: 'checkJunction', data: [lon, lat] });
     }
 }

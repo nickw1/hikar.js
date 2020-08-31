@@ -14110,7 +14110,6 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
     },
 
     init: function() {
-        this.gettingData = false;
         this.simulatedGps = false;
 
         this.armTextProps = [
@@ -14132,22 +14131,26 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
     
         const camera = document.querySelector("a-camera");
         this.el.addEventListener('terrarium-dem-loaded', async(e) => {
-            const position = camera.getAttribute("position");
-            position.y = e.detail.elevation + 1.6; // account for camera being above ground
-            camera.setAttribute("position", position);
             if(this.simulatedGps) {
                 camera.setAttribute('gps-projected-camera', {
                     simulateLatitude: e.detail.lat,
                     simulateLongitude: e.detail.lon
                 });
             }
+            
             this.el.emit('hikar-status-change', { 
                 status: "Loading OSM data..."
             });
         });
 
+        this.el.addEventListener('elevation-available', e=> {
+            const position = camera.getAttribute("position");
+            position.y = e.detail.elevation + 1.6; // account for camera being above ground
+
+            camera.setAttribute("position", position);
+        });
+
         this.el.addEventListener('osm-data-loaded', e=> {
-            this.gettingData = false;
             this.simulatedGps = false;
             this.el.emit('hikar-status-change', { 
                 status: ""
@@ -14276,16 +14279,13 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
     },
 
     _getData: function(lon, lat) {
-        if(this.gettingData === false) {
-            this.gettingData = true;
-            this.el.emit('hikar-status-change', {
-                status: "Loading elevation data..."
-            });
-            this.el.setAttribute('terrarium-dem', {
-                lon: lon,
-                lat: lat
-            });
-        }
+        this.el.emit('hikar-status-change', {
+            status: "Loading elevation data..."
+        });
+        this.el.setAttribute('terrarium-dem', {
+            lon: lon,
+            lat: lat
+        });
     },
 
     _getRenderedText: function(arm) {
@@ -14358,9 +14358,6 @@ window.onload = () => {
         document.getElementById('fov').innerHTML = fov; 
     });
 
-    osmElement.addEventListener('terrarium-dem-loaded', e=> {
-        //osmHasLoaded = false;
-    });
 
     if(get.lat && get.lon) {
         osmElement.setAttribute('hikar-renderer', {
@@ -14392,21 +14389,32 @@ window.onload = () => {
             }
             updatePos(e.detail.position.longitude, e.detail.position.latitude);
         });
-
-        window.addEventListener('dist-moved', e=> {
-            document.getElementById('alt').innerHTML = e.detail.distMoved.toFixed(2);
-        });
     }
 
     // Temporarily use 'fake' lon/lat from camera position
     camera.addEventListener( "fake-loc-updated", e => {
+                osmElement.setAttribute('hikar-renderer', {
+                    'position': {
+                        x: e.detail.lon,
+                        y: e.detail.lat
+                    },
+                    'simulated' : false
+                });
         updatePos(e.detail.lon, e.detail.lat);
     });
     
 
     osmElement.addEventListener('osm-data-loaded', e=> {
-        console.log('osm-data-loaded');
         osmHasLoaded = true;
+        const data = osmElement.components.osm3d.getCurrentRawData();
+        if(data !== null) {
+            document.getElementById('status').innerHTML = 'Loading data for routing...';
+            worker.postMessage({ type: 'updateData', data: data });
+        }
+    });
+
+    osmElement.addEventListener('elevation-available', e=> {
+        document.getElementById('alt').innerHTML = Math.round(e.detail.elevation);
     });
 
     worker.onmessage = e => {
@@ -14435,11 +14443,6 @@ function updatePos(lon, lat) {
     document.getElementById('lon').innerHTML = lon.toFixed(4);
     document.getElementById('lat').innerHTML = lat.toFixed(4);
     if(osmHasLoaded) {
-        const data = osmElement.components.osm3d.getCurrentRawData(lon, lat);
-        if(data !== null) {
-            document.getElementById('status').innerHTML = 'Loading data for routing...';
-            worker.postMessage({ type: 'updateData', data: data });
-        }
         worker.postMessage({ type: 'checkJunction', data: [lon, lat] });
     }
 }
@@ -14461,6 +14464,11 @@ module.exports = AFRAME.registerComponent('osm3d', {
     init: function() {
         this.el.addEventListener('terrarium-dem-loaded', async(e)=> {
             const data = await this.loadAndApplyDem(this.data.url, e.detail.demData);
+            this.system.tile = {
+                x: e.detail.tile.x,
+                y: e.detail.tile.y
+            };
+
             this.el.emit('osm-data-loaded', {
                 objectIds: data.newObjectIds,
                 pois: data.pois
@@ -14505,34 +14513,31 @@ module.exports = AFRAME.registerComponent('osm3d', {
     },
 
     getCurrentRawData: function(lon, lat) {
-        const tile = this.system.sphMerc.getTileFromLonLat(lon, lat, this.system.z);
-        if(this.system.curTile === null || tile.x != this.system.curTile.x || tile.y != this.system.curTile.y) {
+        if(this.system.tile) {
 
             const data = {
                 ways: [],
                 pois: []    
             };
 
-            let key;
-            for(let x = tile.x - 1; x <= tile.x + 1; x++) {
-                for(let y = tile.y - 1; y <= tile.y + 1; y++) {
+            let key, loadedTiles = []; 
+            for(let x = this.system.tile.x - 1; x <= this.system.tile.x + 1; x++) {
+                for(let y = this.system.tile.y - 1; y <= this.system.tile.y + 1; y++) {
                     key = `${this.system.z}/${x}/${y}`;
                     if(this.system.rawData[key]) {
-                        data.ways.push(...this.system.rawData[key].ways);
-                        data.pois.push(...this.system.rawData[key].pois);
+                        loadedTiles.push(this.system.rawData[key]);
                     }
                 }
             }
 
-            if (data.ways.length > 0 || data.pois.length > 0) {
-            
-                this.system.curTile = {
-                    x: tile.x,
-                    y: tile.y
-                };
 
-                return data;
-            }
+            loadedTiles.forEach (tile => {
+                console.log('Adding data for tile');
+                data.ways.push(...tile.ways);
+                data.pois.push(...tile.pois);
+            });
+    
+            return data;
         }
         return null;
     },
@@ -14564,7 +14569,6 @@ AFRAME.registerSystem('osm3d', {
             ways: { },
             pois: { }
         };
-        this.curTile = null;
     },
 
     loadOsm: async function(osmDataJson, tileid, dem=null) {
@@ -14699,6 +14703,7 @@ AFRAME.registerSystem('osm3d', {
 const Tile = require('jsfreemaplib').Tile;
 const DEM = require('jsfreemaplib').DEM;
 const DemTiler = require('jsfreemaplib/demtiler');
+const GoogleProjection = require('jsfreemaplib').GoogleProjection;
 
 module.exports = AFRAME.registerComponent ('terrarium-dem', {
 
@@ -14741,17 +14746,31 @@ module.exports = AFRAME.registerComponent ('terrarium-dem', {
     },
 
     update: function() {
-        this._setPosition(this.data.lon, this.data.lat);
+        this._setPosition();
     },
 
      _setPosition: async function() {
+
          if(this.data.lon >= -180 && this.data.lon <= 180 && this.data.lat >= -90 && this.data.lat <= 90) {
-             const demData = await this.system.updateLonLat(this.data.lon, this.data.lat);
-             this.el.emit('terrarium-dem-loaded', { 
-                 demData: demData,
-                 elevation: this.system.getElevation(this.data.lon, this.data.lat, this.data.zoom),
-                 lat: this.data.lat,
-                 lon: this.data.lon
+            const tile = this.system.tiler.sphMerc.getTileFromLonLat(this.data.lon, this.data.lat, this.data.zoom);
+             if(tile.x != this.system.curTile.x || tile.y != this.system.curTile.y) {
+                 const demData = await this.system.updateLonLat(this.data.lon, this.data.lat);
+                 this.el.emit('terrarium-dem-loaded', { 
+                     demData: demData,
+                     lat: this.data.lat,
+                     lon: this.data.lon,
+                     tile: tile
+                 }); 
+
+                 this.system.curTile = {
+                     x: tile.x,
+                     y: tile.y
+                 };
+            }
+
+             const sphMercPos = this.system.tiler.lonLatToSphMerc(this.data.lon, this.data.lat, this.data.zoom);
+             this.el.emit('elevation-available', {
+                elevation: this.system._getElevationFromSphMerc(sphMercPos, this.data.zoom)
             });
         }
     }
@@ -14766,6 +14785,7 @@ AFRAME.registerSystem('terrarium-dem', {
         this.tilesLoaded = [];
         this.tiler = new DemTiler();
         this.render = false;
+        this.curTile = { x: -1, y: -1 };
     },
 
     initTiler: function(url, zoom) {
@@ -14838,11 +14858,6 @@ AFRAME.registerSystem('terrarium-dem', {
          }
 
          return geom; 
-     },
-
-     getElevation: function(lon, lat, z) {
-         const sphMercPos = this.tiler.lonLatToSphMerc(lon, lat, z);
-         return this._getElevationFromSphMerc(sphMercPos, z);
      },
 
      _getElevationFromSphMerc: function(sphMercPos, z) {    

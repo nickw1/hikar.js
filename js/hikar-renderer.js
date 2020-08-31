@@ -11,7 +11,6 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
     },
 
     init: function() {
-        this.gettingData = false;
         this.simulatedGps = false;
 
         this.armTextProps = [
@@ -33,22 +32,26 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
     
         const camera = document.querySelector("a-camera");
         this.el.addEventListener('terrarium-dem-loaded', async(e) => {
-            const position = camera.getAttribute("position");
-            position.y = e.detail.elevation + 1.6; // account for camera being above ground
-            camera.setAttribute("position", position);
             if(this.simulatedGps) {
                 camera.setAttribute('gps-projected-camera', {
                     simulateLatitude: e.detail.lat,
                     simulateLongitude: e.detail.lon
                 });
             }
+            
             this.el.emit('hikar-status-change', { 
                 status: "Loading OSM data..."
             });
         });
 
+        this.el.addEventListener('elevation-available', e=> {
+            const position = camera.getAttribute("position");
+            position.y = e.detail.elevation + 1.6; // account for camera being above ground
+
+            camera.setAttribute("position", position);
+        });
+
         this.el.addEventListener('osm-data-loaded', e=> {
-            this.gettingData = false;
             this.simulatedGps = false;
             this.el.emit('hikar-status-change', { 
                 status: ""
@@ -177,16 +180,13 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
     },
 
     _getData: function(lon, lat) {
-        if(this.gettingData === false) {
-            this.gettingData = true;
-            this.el.emit('hikar-status-change', {
-                status: "Loading elevation data..."
-            });
-            this.el.setAttribute('terrarium-dem', {
-                lon: lon,
-                lat: lat
-            });
-        }
+        this.el.emit('hikar-status-change', {
+            status: "Loading elevation data..."
+        });
+        this.el.setAttribute('terrarium-dem', {
+            lon: lon,
+            lat: lat
+        });
     },
 
     _getRenderedText: function(arm) {
