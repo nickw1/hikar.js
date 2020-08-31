@@ -106,17 +106,17 @@ class JunctionRouter {
                     // save the path so we can do something with it 
                     p.path = route.path;
 
-					// calculate the real distance of the path (weight is now
-					// adjusted - see above)
-					
-					p.dist = route.path.reduce ( (acc, val, index, arr) => {	
-						return index==0 ? 0 : acc + jsFreemaplib.haversineDist(
-							val[0],
-							val[1],
-							arr[index-1][0],
-							arr[index-1][1]
-						); 
-					}, 0) * 0.001;
+                    // calculate the real distance of the path (weight is now
+                    // adjusted - see above)
+                    
+                    p.dist = route.path.reduce ( (acc, val, index, arr) => {    
+                        return index==0 ? 0 : acc + jsFreemaplib.haversineDist(
+                            val[0],
+                            val[1],
+                            arr[index-1][0],
+                            arr[index-1][1]
+                        ); 
+                    }, 0) * 0.001;
                 }
             }
         });
@@ -177,8 +177,8 @@ class JunctionRouter {
                 }    
 
                 
-                if(idx >=0 && lowestDist.distance < 10.0) {
-                    // it has to be within 10m of a way 
+                if(idx >=0 && lowestDist.distance < 100.0) {
+                    // it has to be within 100m of a way 
                     // We don't yet actually try and split the way though
                     // We need to ensure the POI is inserted into the
                     // CORRECT way (the closest) - aka the "panorama 16
@@ -188,6 +188,7 @@ class JunctionRouter {
                     if(lowestDist.distance < poi.overallLowestDist.distance) {
                         poi.overallLowestDist.distance = lowestDist.distance;
                         poi.overallLowestDist.idx = idx + lowestDist.proportion;
+                        poi.overallLowestDist.intersection = lowestDist.intersection;
                         poi.overallLowestDist.way = way;
                     }
                 }
@@ -203,7 +204,7 @@ class JunctionRouter {
         pois.filter(poi => poi.overallLowestDist.distance < Number.MAX_VALUE).forEach(poi => {
             const way = poi.overallLowestDist.way;
             if(allSplits[way.properties.osm_id] === undefined) allSplits[way.properties.osm_id] = [];
-            allSplits[way.properties.osm_id].push({idx: poi.overallLowestDist.idx, poi: poi, way: way});
+            allSplits[way.properties.osm_id].push({idx: poi.overallLowestDist.idx, poi: poi, way: way, intersection: poi.overallLowestDist.intersection});
         });
 
         // now we need to loop through the ways again 
@@ -219,7 +220,8 @@ class JunctionRouter {
                     newWay.geometry.coordinates.push([way.geometry.coordinates[i][0], way.geometry.coordinates[i][1]]);
                     while(splitIdx < splits.length && Math.floor(splits[splitIdx].idx) == i) {
 
-                        newWay.geometry.coordinates.push([splits[splitIdx].poi.lon, splits[splitIdx].poi.lat, splits[splitIdx].poi.id]);
+                        //newWay.geometry.coordinates.push([splits[splitIdx].poi.lon, splits[splitIdx].poi.lat, splits[splitIdx].poi.id]);
+                        newWay.geometry.coordinates.push([splits[splitIdx].intersection[0], splits[splitIdx].intersection[1], splits[splitIdx].poi.id]);
                         splitIdx++;
                     }
                     i++;    
