@@ -7,6 +7,7 @@
 #
 # 110319 reduced y coords by 20 (approx half) due to greater overall scaling to 0.08
 # 170919 increase size of arm by approx 1.5 while keeping top at the same position
+# 290820 further increase width for webapp rendering
 v  -0.3419 16.0 81.1898
 v  0.3418 16.0 81.1898
 v  0.3418 23.0 85.7753

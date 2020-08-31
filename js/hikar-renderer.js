@@ -47,7 +47,6 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
         this.el.addEventListener('elevation-available', e=> {
             const position = camera.getAttribute("position");
             position.y = e.detail.elevation + 1.6; // account for camera being above ground
-
             camera.setAttribute("position", position);
         });
 
@@ -67,6 +66,9 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                 e.detail.pois.forEach ( poi => {
                     const text = document.createElement('a-text');
                     text.setAttribute('value', poi.properties.name);
+                    text.setAttribute('font', "assets/Roboto-Regular-msdf.json");
+                    text.setAttribute('font-image', "assets/Roboto-Regular.png");
+                    text.setAttribute('negate', false); 
                     text.setAttribute('position', {
                         x : poi.geometry[0] - this.originSphMerc[0],
                         y : poi.geometry[1] + 10,
@@ -101,7 +103,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                         src: '#signpost-texture'
                     });
 
-                    const scaleFactor = signpost[bearing].pois.length > 0 ? 1.2: 2;
+                    const scaleFactor = 12 * (signpost[bearing].pois.length > 0 ? 1.8: 2);
                     for(let i=0; i<2; i++) {
                         const textEntity = document.createElement('a-text');
                         textEntity.setAttribute('value', text);
@@ -125,8 +127,9 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                             y: scaleFactor,
                             z: scaleFactor 
                         });
-                        textEntity.setAttribute('anchor', i == 1 && scaleFactor > 1.2 ? 'center' : this.armTextProps[i][2]);
-                        textEntity.setAttribute('width', 60);
+                        textEntity.setAttribute('anchor', this.armTextProps[i][2]);
+                        textEntity.setAttribute('align', this.armTextProps[i][2]);
+//                        textEntity.setAttribute('width', 60);
                         textEntity.setAttribute('height', 14);
                         signpostArmEntity.appendChild(textEntity);
                     }
@@ -191,7 +194,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
 
     _getRenderedText: function(arm) {
         if(arm.pois.length > 0) {
-            return arm.pois.slice(0, 2).map ( poi => `${poi.properties.name} ${poi.dist.toFixed(2)} km`).join("\n");
+            return arm.pois.slice(0, 2).map ( poi => `${poi.properties.name.length <= 25 ? poi.properties.name : poi.properties.name.substring(0, 23) + ".."} ${poi.dist.toFixed(2)} km`).join("\n");
         } else if (arm.properties.designation) {
             return this.displayedRouteTypes[arm.properties.designation] || null;
         } else if (arm.properties.highway) {
