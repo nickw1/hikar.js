@@ -80,36 +80,33 @@ class JunctionRouter {
             snappedNodes[0] = this.vDet.snapToVertex(curPt, this.distThreshold, true);
         }
         pois.forEach(p => {
-            if(p.properties.name !== undefined) {
+            if(p.properties.name !== undefined && ([
+                    'pub',
+                    'cafe',
+                    'parking',
+                    'restaurant'
+                ].indexOf(p.properties.amenity) >= 0 ||
+              p.properties.place !== undefined || [
+                    "hostel",
+                    "camp_site",
+                    "alpine_hut",
+                    "viewpoint"
+                ].indexOf(p.properties.tourism) >= 0 ||
+              p.properties.natural === 'peak' ||
+              p.properties.railway === 'station')) {
+
                 p.lon = parseFloat(p.lon);
                 p.lat = parseFloat(p.lat);
-                //console.log(`Routing to POI ${p.properties.name} at ${p.lon},${p.lat}`);
                 p.bearing = 720;
                 snappedNodes[1] = options.snapPois ? this.vDet.snapToVertex([p.lon, p.lat], this.poiDistThreshold, false) : [p.lon, p.lat];
                         
                 const route = this.calcPath(snappedNodes);
 
                 if(route!=null && route.path.length>=2 && route.edgeDatas[0].reducedEdge.isAccessiblePath) {
-                    //console.log(`Route ${JSON.stringify(route)}`);
-                    // Initial bearing of the route (for OTV arrows, Hikar signposts, etc) - rounded to nearest degree
-                    let bearing = Math.round(
-                        turfBearing(
-                            turfPoint(route.path[0]), 
-                            turfPoint(route.path[1])
-                        )
-                    );
-
-                    if(bearing < 0) bearing += 360;
-                    p.bearing = bearing;
-                    p.weight = route.weight;
-
-                    // save the path so we can do something with it 
-                    p.path = route.path;
-
                     // calculate the real distance of the path (weight is now
                     // adjusted - see above)
                     
-                    p.dist = route.path.reduce ( (acc, val, index, arr) => {    
+                    const dist = route.path.reduce ( (acc, val, index, arr) => {    
                         return index==0 ? 0 : acc + jsFreemaplib.haversineDist(
                             val[0],
                             val[1],
@@ -117,6 +114,34 @@ class JunctionRouter {
                             arr[index-1][1]
                         ); 
                     }, 0) * 0.001;
+
+                    const pathDist = route.edgeDatas.reduce ( (acc, val, index, arr) => {
+                        return acc + (val.reducedEdge.isAccessiblePath ? 
+                            jsFreemaplib.haversineDist(
+                                val.reducedEdge.v1[0], 
+                                val.reducedEdge.v1[1], 
+                                val.reducedEdge.v2[0], 
+                                val.reducedEdge.v2[1]
+                            ) : 0);
+                        }, 0) * 0.001;
+                    if(dist < 1.5 || pathDist/dist >= 0.5) {
+                        p.dist = dist;
+
+                        // Initial bearing of the route (for OTV arrows, Hikar signposts, etc) - rounded to nearest degree
+                        let bearing = Math.round(
+                            turfBearing(
+                                turfPoint(route.path[0]), 
+                                turfPoint(route.path[1])
+                            )
+                        );
+
+                        if(bearing < 0) bearing += 360;
+                        p.bearing = bearing;
+                        p.weight = route.weight;
+
+                        // save the path so we can do something with it 
+                        p.path = route.path;
+                    }
                 }
             }
         });
@@ -178,7 +203,7 @@ class JunctionRouter {
 
                 
                 if(idx >=0 && lowestDist.distance < 100.0) {
-                    // it has to be within 100m of a way 
+                    // it has to be within 10m of a way 
                     // We don't yet actually try and split the way though
                     // We need to ensure the POI is inserted into the
                     // CORRECT way (the closest) - aka the "panorama 16

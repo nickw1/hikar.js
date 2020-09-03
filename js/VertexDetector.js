@@ -29,32 +29,32 @@ distance/weights to adjoining vertices (non-compacted version)
 class VertexDetector {
 
     constructor(pathFinder) {
-        this.pathFinder = pathFinder;
+        this.graph = pathFinder.serialize();
     }
 
     findNearestVertex(p, junctionOnly = false) {
-        const graph = this.pathFinder.serialize();
         const vertex = [ null, Number.MAX_VALUE ];
 
         const vertices = junctionOnly ?
-            Object.keys(graph.vertices).filter ( k => {
-                return Object.keys(graph.vertices[k]).length >= 3
-            }) : Object.keys(graph.vertices);
+            Object.keys(this.graph.vertices).filter ( k => {
+                return Object.keys(this.graph.vertices[k]).length >= 3
+            }) : Object.keys(this.graph.vertices);
 
         vertices
-            .filter(k => graph.compactedCoordinates[k] !== undefined)
+            .filter(k => this.graph.compactedCoordinates[k] !== undefined)
             .forEach(k => {
-                const dist = turfDistance(turfPoint(p), turfPoint(graph.sourceVertices[k]));
+                const dist = turfDistance(turfPoint(p), turfPoint(this.graph.sourceVertices[k]));
                 if(dist < vertex[1]) {
                     vertex[1] = dist;
-                    vertex[0] = graph.sourceVertices[k].slice(0);
+                    vertex[0] = this.graph.sourceVertices[k].slice(0);
                     vertex[2] = { };
                     // Note - the compactedCoordinates do not include the destination vertex so we have to add it
-                    Object.keys(graph.compactedCoordinates[k])
+                    Object.keys(this.graph.compactedCoordinates[k])
                         .forEach ( kk => {
-                            const dest = graph.sourceVertices[kk].slice(0);
+//                            const dest = kk.split(',');
+                            const dest = this.graph.sourceVertices[kk].slice(0);
                             vertex[2][kk] = {
-                                coords : graph.compactedCoordinates[k][kk]
+                                coords : this.graph.compactedCoordinates[k][kk]
                                     .slice(0)
                                     .concat([[
                                         parseFloat(dest[0]), 
@@ -62,7 +62,7 @@ class VertexDetector {
                                 ]]),
                                 properties : Object.assign(
                                     {}, 
-                                    graph.compactedEdges[k][kk]
+                                    this.graph.compactedEdges[k][kk]
                                 )
                         };
                     });
@@ -79,6 +79,13 @@ class VertexDetector {
             p2[1] = junction[0][1];
         }
         return p2;
+    }
+
+    findEdge(lon1, lat1, lon2, lat2) {
+        const c1 = `${lon1.toFixed(5)},${lat1.toFixed(5)}`;
+        const c2 = `${lon2.toFixed(5)},${lat2.toFixed(5)}`;
+        console.log(`${c1} ${c2}`);
+        return this.graph.compactedEdges[c1] ? this.graph.compactedEdges[c1][c2]: undefined;
     }
 }
 

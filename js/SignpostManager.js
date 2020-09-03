@@ -15,6 +15,7 @@ class SignpostManager {
     }
 
     update(ways, pois) {
+        console.log('SignpostManager.update()');
         const unprojWays = {
             type: 'FeatureCollection'
         };
@@ -56,7 +57,10 @@ class SignpostManager {
                 if(options.onStartProcessing) {
                     options.onStartProcessing();
                 }
-                const nearestPois = this.pois.filter ( poi => turfDistance(turfPoint([poi.lon, poi.lat]), tp) < 5);
+                const nearestPois = this.pois.filter ( poi => {
+                    const dist = turfDistance(turfPoint([poi.lon, poi.lat]), tp);
+                     return dist <= 3 || (dist <= 5 && poi.properties.amenity === undefined  && poi.properties.place !== 'locality');
+                });
                 const groupedPois = this.jr.route(
                     j[0],     
                     nearestPois, { 
