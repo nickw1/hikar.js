@@ -40,7 +40,15 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
             }
             
             this.el.emit('hikar-status-change', { 
-                status: "Loading OSM data..."
+                status: "Loading OSM data...",
+                statusCode: 2
+            });
+        });
+
+        this.el.addEventListener('terrarium-start-update', e=> {
+            this.el.emit('hikar-status-change', {
+                status: "Loading elevation data...",        
+                statusCode: 1
             });
         });
 
@@ -53,7 +61,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
         this.el.addEventListener('osm-data-loaded', e=> {
             this.simulatedGps = false;
             this.el.emit('hikar-status-change', { 
-                status: ""
+                status: "",
             });
             if(camera.components['gps-projected-camera']) {
                 if(!this.originSphMerc) {
@@ -64,23 +72,25 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                 });
 
                 e.detail.pois.forEach ( poi => {
-                    const text = document.createElement('a-text');
-                    text.setAttribute('value', poi.properties.name);
-                    text.setAttribute('font', "assets/Roboto-Regular-msdf.json");
-                    text.setAttribute('font-image', "assets/Roboto-Regular.png");
-                    text.setAttribute('negate', false); 
-                    text.setAttribute('position', {
-                        x : poi.geometry[0] - this.originSphMerc[0],
-                        y : poi.geometry[1] + 10,
-                        z : -(poi.geometry[2] - this.originSphMerc[1])
-                    });
-                    text.setAttribute('scale', {
-                        x: 100,
-                        y: 100,
-                        z: 100
-                    });
-                    text.setAttribute('look-at','[gps-projected-camera]');
-                    this.el.appendChild(text);
+                    if(poi.properties.name !== undefined) {
+                        const text = document.createElement('a-text');
+                        text.setAttribute('value', poi.properties.name);
+                        text.setAttribute('font', "assets/Roboto-Regular-msdf.json");
+                        text.setAttribute('font-image', "assets/Roboto-Regular.png");
+                        text.setAttribute('negate', false); 
+                        text.setAttribute('position', {
+                            x : poi.geometry[0] - this.originSphMerc[0],
+                            y : poi.geometry[1] + 10,
+                            z : -(poi.geometry[2] - this.originSphMerc[1])
+                        });
+                        text.setAttribute('scale', {
+                            x: 100,
+                            y: 100,
+                            z: 100
+                        });
+                        text.setAttribute('look-at','[gps-projected-camera]');
+                        this.el.appendChild(text);
+                    }
                 });
             } else {
                 console.error('gps-projected-camera not initialised yet.');
@@ -106,6 +116,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                     const scaleFactor = 12 * (signpost[bearing].pois.length > 0 ? 1.8: 2);
                     for(let i=0; i<2; i++) {
                         const textEntity = document.createElement('a-text');
+                        console.log(`TEXT ${text}`);
                         textEntity.setAttribute('value', text);
 
                         // Note: font JSON and images cannot be put in A-Frame assets
@@ -183,9 +194,6 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
     },
 
     _getData: function(lon, lat) {
-        this.el.emit('hikar-status-change', {
-            status: "Loading elevation data..."
-        });
         this.el.setAttribute('terrarium-dem', {
             lon: lon,
             lat: lat

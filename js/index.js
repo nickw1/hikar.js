@@ -7,7 +7,7 @@ const qs = require('querystring');
 
 require('./fake-loc');
 
-let osmElement, osmHasLoaded = false, worker;
+let osmElement, osmHasLoaded = false, worker, state = 0;
  
 window.onload = () => {
     let lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
@@ -45,6 +45,7 @@ window.onload = () => {
     osmElement = document.getElementById('osmElement');
     osmElement.addEventListener('hikar-status-change', e => {
         document.getElementById('status').innerHTML = e.detail.status;        
+        if(e.detail.statusCode !== undefined) state = e.detail.statusCode;
     });    
     osmElement.addEventListener('nw-pinch', e => {
         const fov = parseFloat(camera.getAttribute('fov')) + e.detail.direction * 10;
@@ -99,10 +100,12 @@ window.onload = () => {
     
 
     osmElement.addEventListener('osm-data-loaded', e=> {
+        state = 0;
         osmHasLoaded = true;
         const data = osmElement.components.osm3d.getCurrentRawData();
         if(data !== null) {
             document.getElementById('status').innerHTML = 'Loading data for routing...';
+            state = 3;
             worker.postMessage({ type: 'updateData', data: data });
         }
     });
@@ -115,6 +118,7 @@ window.onload = () => {
         switch(e.data.type) {
             case 'dataUpdated':
                 document.getElementById('status').innerHTML = '';
+                state = 0;
                 break;
 
             case 'processingJunction':
@@ -122,7 +126,9 @@ window.onload = () => {
                 break;
 
             case 'checkJunctionFinished': 
-                document.getElementById('status').innerHTML = '';
+                if(state == 0) {
+                    document.getElementById('status').innerHTML = '';
+                }
                 if(e.data.data !== null) {
                     osmElement.emit('new-signpost', {
                         signpost: e.data.data
@@ -138,5 +144,7 @@ function updatePos(lon, lat) {
     document.getElementById('lat').innerHTML = lat.toFixed(4);
     if(osmHasLoaded) {
         worker.postMessage({ type: 'checkJunction', data: [lon, lat] });
+    } else {
+        console.log('osmHasLoaded is false');
     }
 }
