@@ -80,12 +80,9 @@ class VertexDetector {
         }
         return p2;
     }
-
-    findEdge(lon1, lat1, lon2, lat2) {
-        const c1 = `${lon1.toFixed(5)},${lat1.toFixed(5)}`;
-        const c2 = `${lon2.toFixed(5)},${lat2.toFixed(5)}`;
-        console.log(`${c1} ${c2}`);
-        return this.graph.compactedEdges[c1] ? this.graph.compactedEdges[c1][c2]: undefined;
+    
+    findEdgeWeightByKeys(c1,c2) {
+        return this.graph.compactedVertices[c1] ? this.graph.compactedVertices[c1][c2]: undefined;
     }
 }
 

@@ -3,20 +3,10 @@
 // Wraps GeoJSON Path Finder (https://github.com/perliedman/geojson-path-finder)
 // to provide routes to a set of POIs using a given GeoJSON network.
 //
-// Focuses on the ability to calculate and group routes from junctions to POIs
-// (e.g. for creating signposts showing the direction and distance to POIs in
-// Hikar, or for calculating routes to panoramas in OpenTrailView)
+// This is based on the original PanoNetworkMgr from OpenTrailView, but has
+// become quite heavily modified for optimal use in Hikar.
 //
-// This is based on the original PanoNetworkMgr from OpenTrailView, altered to 
-// be more generic (e.g. use in Hikar). It does the following:
-// - Takes in a network of GeoJSON
-// - Inserts POIs into it (these can be panoramas, or actual POIs, etc)
-// - Routes to each POI
-// - Groups and returns routes
-//
-// Requires bugfixed geojson-path-finder; bundled here 
-// (also at https://github.com/nickw1/geojson-path-finder); PR to main repo
-// pending
+// Requires bugfixed/enhanced geojson-path-finder; bundled with Hikar. 
 
 const jsFreemaplib = require('jsfreemaplib');
 const PathFinder = require('./geojson-path-finder'); 
@@ -32,6 +22,9 @@ class JunctionRouter {
         this.distThreshold = options.distThreshold || 0.02;
         this.poiDistThreshold = options.poiDistThreshold || 0.1;
         this.vDet = null;
+        this.roadCost = options.roadCost || 1.25;
+        this.minPathProportion = options.minPathProportion || 0.5;
+        this.minPathProportionOverride = options.minPathProportionOverride || 1.5;
     }
 
     hasData() {
@@ -44,7 +37,7 @@ class JunctionRouter {
         this.pathFinder = new PathFinder(geojson, { 
             precision: 0.00001,    
             weightFn: (a, b, props) => {
-                return jsFreemaplib.haversineDist(a[0], a[1], b[0], b[1]) * (this._isAccessiblePath(props) ? 1.0 : 1.25) * 0.001; // weighting is as for Hikar Android app 0.3.x
+                return jsFreemaplib.haversineDist(a[0], a[1], b[0], b[1]) * (this._isAccessiblePath(props) ? 1.0 : this.roadCost) * 0.001; // weighting is as for Hikar Android app 0.3.x
             },
             edgeDataReduceFn: (seed, props) => {
                 return {
@@ -105,7 +98,7 @@ class JunctionRouter {
                 if(route!=null && route.path.length>=2 && route.edgeDatas[0].reducedEdge.isAccessiblePath) {
                     // calculate the real distance of the path (weight is now
                     // adjusted - see above)
-                    
+                   
                     const dist = route.path.reduce ( (acc, val, index, arr) => {    
                         return index==0 ? 0 : acc + jsFreemaplib.haversineDist(
                             val[0],
@@ -115,16 +108,17 @@ class JunctionRouter {
                         ); 
                     }, 0) * 0.001;
 
+                    // note this uses compacted nodes so will give a less 
+                    // accurate distance compared to the above. Nonetheless 
+                    // it's good enough for evaluating what proportion of the
+                    // route is on a road, allowing us to reject road-heavy
+                    // routings to POIs.
                     const pathDist = route.edgeDatas.reduce ( (acc, val, index, arr) => {
-                        return acc + (val.reducedEdge.isAccessiblePath ? 
-                            jsFreemaplib.haversineDist(
-                                val.reducedEdge.v1[0], 
-                                val.reducedEdge.v1[1], 
-                                val.reducedEdge.v2[0], 
-                                val.reducedEdge.v2[1]
-                            ) : 0);
-                        }, 0) * 0.001;
-                    if(dist < 1.5 || pathDist/dist >= 0.5) {
+                        const realDist = this.vDet.findEdgeWeightByKeys(val.reducedEdge.v1, val.reducedEdge.v2) / (val.reducedEdge.isAccessiblePath ? 1 : this.roadCost);
+                        return [acc[0] + realDist, acc[1] + (val.reducedEdge.isAccessiblePath ? realDist: 0)];
+                        }, [0,0]);
+
+                    if(dist < this.minPathProportionOverride || pathDist[1]/pathDist[0] >= this.minPathProportion) {
                         p.dist = dist;
 
                         // Initial bearing of the route (for OTV arrows, Hikar signposts, etc) - rounded to nearest degree

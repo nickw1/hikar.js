@@ -1,6 +1,6 @@
 {
     "name": "hikar.js",
-    "version": "0.0.200901",
+    "version": "0.0.200902",
     "description": "Hikar - the webapp. Using AR.js.",
     "scripts": {
         "build": "browserify index.js > bundle.js && browserify worker.js > bundleworker.js"

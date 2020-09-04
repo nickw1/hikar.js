@@ -62,7 +62,7 @@ PathFinder.prototype = {
                     ? path.reduce(function buildEdgeData(eds, v, i, vs) {
                         if (i > 0) {
                             eds.push({
-                                reducedEdge: Object.assign({v1: this._graph.sourceVertices[vs[i-1]], v2: this._graph.sourceVertices[v]},this._graph.compactedEdges[vs[i - 1]][v])
+                                reducedEdge: Object.assign({v1: vs[i-1], v2: v},this._graph.compactedEdges[vs[i - 1]][v])
                             });
                         }
 
