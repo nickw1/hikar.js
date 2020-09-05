@@ -1,5 +1,6 @@
 require('aframe-osm-3d');
 require('./hikar-renderer');
+require('./signpost-renderer');
 require('./vertical-controls');
 require('./pinch-detector');
 const jsfreemaplib = require('jsfreemaplib');
@@ -7,12 +8,10 @@ const qs = require('querystring');
 
 require('./fake-loc');
 
-let osmElement, osmHasLoaded = false, worker, state = 0;
+let osmElement, osmHasLoaded = false, state = 0;
  
 window.onload = () => {
     let lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
-
-    worker = new Worker('js/bundleworker.js');
 
     const parts = window.location.href.split('?');     
     const get = parts.length === 2 ? qs.parse(parts[1]): { };
@@ -44,7 +43,9 @@ window.onload = () => {
 
     osmElement = document.getElementById('osmElement');
     osmElement.addEventListener('hikar-status-change', e => {
-        document.getElementById('status').innerHTML = e.detail.status;        
+        if(e.detail.conditionalUpdate !== true || state === 0) {
+            document.getElementById('status').innerHTML = e.detail.status;        
+        }
         if(e.detail.statusCode !== undefined) state = e.detail.statusCode;
     });    
     osmElement.addEventListener('nw-pinch', e => {
@@ -98,53 +99,16 @@ window.onload = () => {
         updatePos(e.detail.lon, e.detail.lat);
     });
     
-
-    osmElement.addEventListener('osm-data-loaded', e=> {
-        state = 0;
-        osmHasLoaded = true;
-        const data = osmElement.components.osm3d.getCurrentRawData();
-        if(data !== null) {
-            document.getElementById('status').innerHTML = 'Loading data for routing...';
-            state = 3;
-            worker.postMessage({ type: 'updateData', data: data });
-        }
-    });
-
     osmElement.addEventListener('elevation-available', e=> {
         document.getElementById('alt').innerHTML = Math.round(e.detail.elevation);
     });
-
-    worker.onmessage = e => {
-        switch(e.data.type) {
-            case 'dataUpdated':
-                document.getElementById('status').innerHTML = '';
-                state = 0;
-                break;
-
-            case 'processingJunction':
-                document.getElementById('status').innerHTML = 'Creating possible signpost...';
-                break;
-
-            case 'checkJunctionFinished': 
-                if(state == 0) {
-                    document.getElementById('status').innerHTML = '';
-                }
-                if(e.data.data !== null) {
-                    osmElement.emit('new-signpost', {
-                        signpost: e.data.data
-                    });
-                }
-                break;
-        }
-    }
 }
 
 function updatePos(lon, lat) {
     document.getElementById('lon').innerHTML = lon.toFixed(4);
     document.getElementById('lat').innerHTML = lat.toFixed(4);
-    if(osmHasLoaded) {
-        worker.postMessage({ type: 'checkJunction', data: [lon, lat] });
-    } else {
-        console.log('osmHasLoaded is false');
-    }
+    osmElement.setAttribute('signpost-renderer', {
+        lon: lon,
+        lat: lat
+    });
 }

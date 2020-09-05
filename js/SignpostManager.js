@@ -7,15 +7,31 @@ const turfBearing = require('@turf/bearing').default;
 
 class SignpostManager {
     constructor(options = {}) {
-        this.jr = new JunctionRouter({ distThreshold: 0.02 });
+        this.jr = new JunctionRouter({ 
+            distThreshold: options.distThreshold,
+            poiDistThreshold: options.poiDistThreshold,
+            roadCost: options.roadCost,
+            minPathProportion: options.minPathProportion,
+            minPathProportionOverride: options.minPathProportionOverride
+        });
         this.sphMerc = new GoogleProjection();
         this.signposts = { };
         this.lastPos = [-181, -91];
         this.juncDetectDistChange = options.juncDetectDistChange || 0.005;
     }
 
+    setOptions(options) {
+        this.jr.setOptions({    
+            distThreshold: options.distThreshold,
+            poiDistThreshold: options.poiDistThreshold,
+            roadCost: options.roadCost,
+            minPathProportion: options.minPathProportion,
+            minPathProportionOverride: options.minPathProportionOverride
+        });
+        this.juncDetectDistChange = options.juncDetectDistChange || 0.005;
+    }
+
     update(ways, pois) {
-        console.log('SignpostManager.update()');
         const unprojWays = {
             type: 'FeatureCollection'
         };
@@ -49,9 +65,7 @@ class SignpostManager {
         const j = this.jr.isJunction(p);
         if(j) {
             const jKey = `${j[0][0].toFixed(5)},${j[0][1].toFixed(5)}`;
-            console.log(`**** JUNCTION **** key=${jKey}`);
             if(this.signposts[jKey]) {
-                console.log('This junction already exists - not doing anything else');
                 return null; // existing signpost present 
             } else {
                 if(options.onStartProcessing) {
@@ -92,7 +106,7 @@ class SignpostManager {
                             .slice(0)
                             .sort( (a,b) => a.dist * this._getWeighting(a.properties) - b.dist * this._getWeighting(b.properties) );
                 });
-                console.log('FINAL SIGNPOST (SORTED!)');
+                console.log('FINAL SIGNPOST');
                 console.log(signpost);
                 this.signposts[jKey] = signpost;
                 return Object.keys(signpost).length > 0 ? {

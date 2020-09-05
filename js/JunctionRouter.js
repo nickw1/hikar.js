@@ -19,9 +19,13 @@ const turfBearing = require('@turf/bearing').default;
 class JunctionRouter {
 
     constructor(options = { }) {
+        this.vDet = null;
+        this.setOptions(options);
+    }
+
+    setOptions(options) {
         this.distThreshold = options.distThreshold || 0.02;
         this.poiDistThreshold = options.poiDistThreshold || 0.1;
-        this.vDet = null;
         this.roadCost = options.roadCost || 1.25;
         this.minPathProportion = options.minPathProportion || 0.5;
         this.minPathProportionOverride = options.minPathProportionOverride || 1.5;
