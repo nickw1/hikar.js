@@ -7,13 +7,17 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
         },
         simulated: {
             type: 'boolean'
+        },
+        camera: {
+            type: 'string',
+            default: 'camera1'
         }
     },
 
     init: function() {
         this.simulatedGps = false;
 
-        const camera = document.querySelector("a-camera");
+        const camera = this.el.sceneEl.querySelector(`#${this.data.camera}`); 
         this.el.addEventListener('terrarium-dem-loaded', async(e) => {
             if(this.simulatedGps) {
                 camera.setAttribute('gps-projected-camera', {
@@ -48,10 +52,10 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
             });
             if(camera.components['gps-projected-camera']) {
                 if(!this.originSphMerc) {
-                    this.originSphMerc = camera.components['gps-projected-camera'].originCoordsProjected;
+                    this.originSphMerc = camera.components['gps-projected-camera'].originCoords;
                 }
-                e.detail.objectIds.forEach ( id => {
-                    this.el.object3DMap[id].geometry.translate(-this.originSphMerc[0], 0, this.originSphMerc[1]);
+                e.detail.renderedWays.forEach ( mesh => {
+                    mesh.geometry.translate(-this.originSphMerc[0], 0, this.originSphMerc[1]);
                 });
 
                 e.detail.pois.forEach ( poi => {
@@ -61,10 +65,14 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                         text.setAttribute('font', "assets/Roboto-Regular-msdf.json");
                         text.setAttribute('font-image', "assets/Roboto-Regular.png");
                         text.setAttribute('negate', false); 
+                        text.setAttribute('gps-projected-entity-place', {
+                            latitude: poi.geometry[2],
+                            longitude: poi.geometry[0]
+                        });
                         text.setAttribute('position', {
-                            x : poi.geometry[0] - this.originSphMerc[0],
+                            x : 0, 
                             y : poi.geometry[1] + 10,
-                            z : -(poi.geometry[2] - this.originSphMerc[1])
+                            z: 0 
                         });
                         text.setAttribute('scale', {
                             x: 100,

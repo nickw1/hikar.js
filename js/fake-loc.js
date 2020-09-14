@@ -9,7 +9,7 @@ module.exports = AFRAME.registerComponent('fake-loc', {
     tick: function() {
         const t = new Date().getTime();
         if(t - this.curTime > 2000) {
-            const origin = this.el.components['gps-projected-camera'].originCoordsProjected;
+            const origin = this.el.components['gps-projected-camera'].originCoords;
             if(!origin) return;
             const dx = this.el.object3D.position.x - this.lastPos[0];
             const dz = this.el.object3D.position.z - this.lastPos[1];

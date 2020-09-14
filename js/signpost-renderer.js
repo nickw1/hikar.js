@@ -30,6 +30,10 @@ AFRAME.registerComponent('signpost-renderer', {
         },
         lon: {
             type: 'number'
+        },
+        camera: {
+            type: 'string',
+            default: 'camera1'
         }
     },
 
@@ -37,7 +41,7 @@ AFRAME.registerComponent('signpost-renderer', {
         this.worker = new Worker(this.data.worker);
         this.osmHasLoaded = false;
 
-        const camera = document.querySelector('a-camera');
+        const camera = this.el.sceneEl.querySelector(`#${this.data.camera}`); 
         
         this.armTextProps = [
             [-0.4, -90, 'left'],
@@ -206,9 +210,7 @@ AFRAME.registerComponent('signpost-renderer', {
                 this.data.lon, 
                 this.data.lat
             ] });
-        } else {
-            console.log('osmHasLoaded is false');
-        }
+        } 
     },
 
     _getRenderedText: function(arm) {

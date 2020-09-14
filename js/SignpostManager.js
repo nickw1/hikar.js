@@ -35,6 +35,8 @@ class SignpostManager {
         const unprojWays = {
             type: 'FeatureCollection'
         };
+		unprojWays.features = ways;
+		/*
         unprojWays.features = ways.map ( f => { 
             return {
                 type: 'Feature',
@@ -45,11 +47,15 @@ class SignpostManager {
                 }
             }
         });
+		*/
+		
         this.pois = pois.map ( f => {
             return {
                 properties: Object.assign({}, f.properties),
-                lon: this.sphMerc.googleToLon(f.geometry[0]),
-                lat: this.sphMerc.googleToLat(f.geometry[2])
+//                lon: this.sphMerc.googleToLon(f.geometry[0]),
+ //               lat: this.sphMerc.googleToLat(f.geometry[2])
+				   lon: f.geometry[0],
+					lat: f.geometry[2]
             };
         });
         this.jr.update(unprojWays, this.pois);
