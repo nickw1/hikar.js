@@ -6,13 +6,16 @@
 <title>Hikar Webapp - Hikar in your Browser with AR.js</title>
 <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
 <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
-<script src="AR.js/aframe/build/aframe-ar-location-only.js"></script>
+<script src="AR.js/aframe/build/aframe-ar-nft.js"></script>
 <script src="js/bundle.js"></script>
 <link rel='stylesheet' type='text/css' href='css/webapp.css' />
 </head>
 
 <body>
-    <a-scene vr-mode-ui="enabled: false" renderer='antialias: true; alpha:true'>
+    <a-scene
+        vr-mode-ui="enabled: false"
+		arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false;'
+		renderer='antialias: true; alpha: true'>
         <a-assets>
             <a-asset-item id='signpost-obj' src='assets/nick_metal_sign_post.obj'></a-asset-item>
             <a-asset-item id='signpost-arm-obj' src='assets/nick_metal_sign_post_arm.obj'></a-asset-item>
@@ -26,7 +29,6 @@
             Alt<span id='alt'></span>m
         </div>
         <a-camera id='camera1' look-controls-enabled='false' near="0.1" far="50000" fov="80" arjs-look-controls='smoothingFactor: 0.1' gps-projected-camera='gpsMinDistance: 5' rotation-reader vertical-controls wasd-controls="acceleration: 1300"> </a-camera>
-        <a-entity arjs-webcam-texture id='videotexture'></a-entity>
         <a-entity id='osmElement' terrarium-dem='zoom: 13; url: proxy.php?x={x}&y={y}&z={z}' osm3d='url: https://hikar.org/fm/ws/tsvr.php?x={x}&y={y}&z={z}&way=highway&amp;poi=place,natural,amenity,tourism,railway&amp;outProj=4326; emitRawData: true' hikar pinch-detector></a-entity>
     </a-scene>
 </body>

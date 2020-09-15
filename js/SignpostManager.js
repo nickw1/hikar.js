@@ -35,27 +35,13 @@ class SignpostManager {
         const unprojWays = {
             type: 'FeatureCollection'
         };
-		unprojWays.features = ways;
-		/*
-        unprojWays.features = ways.map ( f => { 
-            return {
-                type: 'Feature',
-                properties: Object.assign({}, f.properties),
-                geometry: {
-                    type: 'LineString',
-                    coordinates: f.geometry.coordinates.map ( coord => this.sphMerc.unproject(coord).concat(coord[2]))
-                }
-            }
-        });
-		*/
-		
+        unprojWays.features = ways;
+        
         this.pois = pois.map ( f => {
             return {
                 properties: Object.assign({}, f.properties),
-//                lon: this.sphMerc.googleToLon(f.geometry[0]),
- //               lat: this.sphMerc.googleToLat(f.geometry[2])
-				   lon: f.geometry[0],
-					lat: f.geometry[2]
+                lon: f.geometry[0],
+                lat: f.geometry[2]
             };
         });
         this.jr.update(unprojWays, this.pois);
@@ -87,12 +73,9 @@ class SignpostManager {
                         snapToJunction: false, 
                         snapPois: true     
                     } );
-                //console.log('**** groupedPOIs: ****');
-                //console.log(groupedPois);
 
                 const curPoint = turfPoint(j[0]);
                 const signpost = { };
-                //console.log(JSON.stringify(Object.keys(j[1])));
                 Object.keys(j[1])
                     .filter (k => j[1][k].properties.isAccessiblePath == true)
                     .forEach ( k => {
@@ -112,8 +95,6 @@ class SignpostManager {
                             .slice(0)
                             .sort( (a,b) => a.dist * this._getWeighting(a.properties) - b.dist * this._getWeighting(b.properties) );
                 });
-                console.log('FINAL SIGNPOST');
-                console.log(signpost);
                 this.signposts[jKey] = signpost;
                 return Object.keys(signpost).length > 0 ? {
                     signpost: signpost, // created a signpost - return it  

@@ -111,7 +111,6 @@ AFRAME.registerComponent('signpost-renderer', {
             Object.keys(signpost).forEach ( bearing => {
                 const text = this._getRenderedText(signpost[bearing]);
                 if(text !== null) {
-                    console.log(`Creating arm: BEARING ${bearing}`);
                     const signpostArmEntity = document.createElement('a-entity');
                     signpostArmEntity.setAttribute('obj-model', {
                         obj: '#signpost-arm-obj'
@@ -123,7 +122,6 @@ AFRAME.registerComponent('signpost-renderer', {
                     const scaleFactor = 12 * (signpost[bearing].pois.length > 0 ? 1.8: 2);
                     for(let i=0; i<2; i++) {
                         const textEntity = document.createElement('a-text');
-                        console.log(`TEXT ${text}`);
                         textEntity.setAttribute('value', text);
 
                         // Note: font JSON and images cannot be put in A-Frame assets
