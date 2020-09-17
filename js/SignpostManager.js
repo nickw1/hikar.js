@@ -40,8 +40,8 @@ class SignpostManager {
         this.pois = pois.map ( f => {
             return {
                 properties: Object.assign({}, f.properties),
-                lon: f.geometry[0],
-                lat: f.geometry[2]
+                lon: f.geometry.coordinates[0],
+                lat: f.geometry.coordinates[1]
             };
         });
         this.jr.update(unprojWays, this.pois);

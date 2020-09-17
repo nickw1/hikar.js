@@ -66,12 +66,12 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                         text.setAttribute('font-image', "assets/Roboto-Regular.png");
                         text.setAttribute('negate', false); 
                         text.setAttribute('gps-projected-entity-place', {
-                            latitude: poi.geometry[2],
-                            longitude: poi.geometry[0]
+                            latitude: poi.geometry.coordinates[1],
+                            longitude: poi.geometry.coordinates[0]
                         });
                         text.setAttribute('position', {
                             x : 0, 
-                            y : poi.geometry[1] + 10,
+                            y : poi.geometry.coordinates[2] + 10,
                             z: 0 
                         });
                         text.setAttribute('scale', {
