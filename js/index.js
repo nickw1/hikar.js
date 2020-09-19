@@ -44,15 +44,15 @@ window.onload = () => {
     const camera = document.querySelector('a-camera');
     document.getElementById('fov').innerHTML = camera.getAttribute('fov');
 
-    const osmElement = document.getElementById('osmElement');
-    osmElement.addEventListener('hikar-status-change', e => {
+    const hikarElement = document.querySelector('a-hikar');
+    hikarElement.addEventListener('hikar-status-change', e => {
         if(e.detail.conditionalUpdate !== true || state === 0) {
             document.getElementById('status').innerHTML = e.detail.status;        
         }
         if(e.detail.statusCode !== undefined) state = e.detail.statusCode;
     });    
 
-    osmElement.addEventListener('nw-pinch', e => {
+    hikarElement.addEventListener('nw-pinch', e => {
         const fov = parseFloat(camera.getAttribute('fov')) + e.detail.direction * 10;
         camera.setAttribute('fov', fov);
         document.getElementById('fov').innerHTML = fov; 
@@ -64,17 +64,15 @@ window.onload = () => {
         // so we can move around using WASD
         camera.setAttribute('fake-loc', true);
 
-        osmElement.setAttribute('hikar', {
-            lon: parseFloat(get.lon), 
-            lat: parseFloat(get.lat)
-        });
+        hikarElement.setAttribute('lon', parseFloat(get.lon));
+        hikarElement.setAttribute('lat', parseFloat(get.lat));
     } 
     
-    osmElement.addEventListener('elevation-available', e=> {
+    hikarElement.addEventListener('elevation-available', e=> {
         document.getElementById('alt').innerHTML = Math.round(e.detail.elevation);
     });
 
-    osmElement.addEventListener('pos-updated', e=> {
+    hikarElement.addEventListener('pos-updated', e=> {
         document.getElementById('lon').innerHTML = e.detail.lon.toFixed(4);
         document.getElementById('lat').innerHTML = e.detail.lat.toFixed(4);
     });

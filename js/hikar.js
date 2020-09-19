@@ -88,3 +88,16 @@ AFRAME.registerComponent('hikar', {
         });
     }
 });
+
+
+AFRAME.registerPrimitive('a-hikar', {
+    defaultComponents: {
+        'hikar': { },
+        'pinch-detector': { }
+    },
+
+    mappings: {
+        lat: 'hikar.lat',
+        lon: 'hikar.lon'
+    }
+});

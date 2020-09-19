@@ -70,7 +70,7 @@ AFRAME.registerComponent('signpost-renderer', {
 
                 case 'processingJunction':
                     this.el.emit('hikar-status-change', {
-                        status: 'Checking for signpost',
+                        status: 'Checking for signpost...',
                     });
                     break;
 

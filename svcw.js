@@ -2,9 +2,9 @@
 const CACHE_NAME = 'hikarCache';
 const urlsToCache = [
     'index.html',
-    //'js/bundle.js',
-    'css/webapp.css',
-    'AR.js/aframe/build/aframe-ar-nft.js'
+    'js/bundle.js',
+    'js/bundleworker.js',
+    'css/webapp.css'
 ];
 
 const cachableOnResponse = [
