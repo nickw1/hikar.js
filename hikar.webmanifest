@@ -1,0 +1,21 @@
+{
+    "name": "Hikar Webapp",
+    "short_name": "hikarweb",
+    "description": "The Hikar Web App, developed using AR.js and A-Frame.",
+    "icons": [
+        {
+            "src": "icons/hikar_web_192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/hikar_web_512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "start_url": "/webapp/index.html",
+    "display":  "fullscreen",
+    "theme_color" : "#87CEEB",
+    "background_color": "#87CEEB"
+}
