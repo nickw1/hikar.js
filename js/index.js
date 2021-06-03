@@ -60,12 +60,14 @@ window.onload = () => {
 
 
     if(get.lat && get.lon) {
+        const components = hikarElement.components;
+
         // if we have a query string, append a fake-loc component to the camera
         // so we can move around using WASD
         camera.setAttribute('fake-loc', true);
         camera.setAttribute('gps-projected-camera', {
-                simulateLatitude: get.lat,
-                simulateLongitude: get.lon
+            simulateLatitude: get.lat,
+            simulateLongitude: get.lon
         });
         hikarElement.setAttribute('lon', parseFloat(get.lon));
         hikarElement.setAttribute('lat', parseFloat(get.lat));
@@ -81,7 +83,8 @@ window.onload = () => {
                 lastTime = curTime;
                 lastPos.latitude = e.detail.position.latitude;
                 lastPos.longitude = e.detail.position.longitude;
-                this._doUpdate(e.detail.position.longitude, e.detail.position.latitude);
+                hikarElement.setAttribute('lon', e.detail.position.longitude);
+                hikarElement.setAttribute('lat', e.detail.position.latitude);
             }
         });
     } 

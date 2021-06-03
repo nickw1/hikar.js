@@ -5,9 +5,6 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
         position: {
             type: 'vec2'
         },
-        simulated: {
-            type: 'boolean'
-        },
         camera: {
             type: 'string',
             default: 'camera1'
@@ -15,17 +12,8 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
     },
 
     init: function() {
-        this.simulatedGps = false;
-
         const camera = this.el.sceneEl.querySelector(`#${this.data.camera}`); 
         this.el.addEventListener('terrarium-dem-loaded', async(e) => {
-            if(this.simulatedGps) {
-                camera.setAttribute('gps-projected-camera', {
-                    simulateLatitude: e.detail.lat,
-                    simulateLongitude: e.detail.lon
-                });
-            }
-            
             this.el.emit('hikar-status-change', { 
                 status: "Loading OSM data...",
                 statusCode: 2
@@ -46,7 +34,6 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
         });
 
         this.el.addEventListener('osm-data-loaded', e=> {
-            this.simulatedGps = false;
             this.el.emit('hikar-status-change', { 
                 status: "",
             });
@@ -91,7 +78,6 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
 
     update: function() {
         if(this.data.position.x !== 0 || this.data.position.y !== 0) {
-            this.simulatedGps = this.data.simulated;
             this._getData(this.data.position.x, this.data.position.y);
         }
     },

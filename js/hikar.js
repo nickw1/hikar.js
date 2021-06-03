@@ -36,18 +36,14 @@ AFRAME.registerComponent('hikar', {
     },
 
     // if lon and lat properties are provided, do a 'simulated' update
-    // (one where the lon and lat are set as parrameters rather than from the
+    // (one where the lon and lat are set as parameters rather than from the
     // GPS)
-    update: function() {
+    update: function(oldData) {
         if(this.data.lon !== 0 && this.data.lat !== 0) {
             // create a signpost renderer, we need to do this immediately 
             // otherwise the osm-data-loaded event listener will never be
             // attached to it
-            this.el.setAttribute('signpost-renderer', {
-                lon: this.data.lon, 
-                lat: this.data.lat
-            });
-            this._doUpdate(this.data.lon, this.data.lat, false, true);
+            this._doUpdate(this.data.lon, this.data.lat, true, false);
         }
     },
 
@@ -55,8 +51,6 @@ AFRAME.registerComponent('hikar', {
     _doUpdate: function(lon, lat, signpostUpdate = true, simulated = false) {
         this._updateHikarRenderer(lon, lat, simulated);
         if(signpostUpdate) {
-        //    this._updatePos(lon, lat);
-            // Added this
             this.el.setAttribute('signpost-renderer', {
                 lon: lon,
                 lat: lat
@@ -73,8 +67,7 @@ AFRAME.registerComponent('hikar', {
                 'position': {
                     x: lon, 
                     y: lat 
-                },
-                'simulated' : simulated
+                }
         });
     },
 });
