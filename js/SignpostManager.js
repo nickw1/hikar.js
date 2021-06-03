@@ -32,11 +32,6 @@ class SignpostManager {
     }
 
     update(ways, pois) {
-        const unprojWays = {
-            type: 'FeatureCollection'
-        };
-        unprojWays.features = ways;
-        
         this.pois = pois.map ( f => {
             return {
                 properties: Object.assign({}, f.properties),
@@ -44,6 +39,10 @@ class SignpostManager {
                 lat: f.geometry.coordinates[1]
             };
         });
+        const unprojWays = {
+            type: 'FeatureCollection'
+        };
+        unprojWays.features = ways;
         this.jr.update(unprojWays, this.pois);
     }
 

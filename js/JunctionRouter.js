@@ -37,22 +37,26 @@ class JunctionRouter {
 
     // Update with new geojson before attempting to route
     update(geojson, pois) {
-        geojson = this.insertIntoNetwork(geojson, pois);
-        this.pathFinder = new PathFinder(geojson, { 
-            precision: 0.00001,    
-            weightFn: (a, b, props) => {
+        if(geojson.features.length > 0) {
+            geojson = this.insertIntoNetwork(geojson, pois);
+            this.pathFinder = new PathFinder(geojson, { 
+                precision: 0.00001,    
+                weightFn: (a, b, props) => {
                 return jsFreemaplib.haversineDist(a[0], a[1], b[0], b[1]) * (this._isAccessiblePath(props) ? 1.0 : this.roadCost) * 0.001; // weighting is as for Hikar Android app 0.3.x
-            },
-            edgeDataReduceFn: (seed, props) => {
-                return {
-                    highway: props.highway,
-                    foot: props.foot,
-                    designation: props.designation,
-                    isAccessiblePath: this._isAccessiblePath(props)
-                };
-            }
-        } );
-        this.vDet = new VertexDetector(this.pathFinder);
+                },
+                edgeDataReduceFn: (seed, props) => {
+                    return {
+                        highway: props.highway,
+                        foot: props.foot,
+                        designation: props.designation,
+                        isAccessiblePath: this._isAccessiblePath(props)
+                    };
+                }
+            } );
+            this.vDet = new VertexDetector(this.pathFinder);
+        } else {
+            this.vDet = null;
+        }
     }
 
     // is a given point a junction?
