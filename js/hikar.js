@@ -2,10 +2,9 @@
  *
  * The main 'orchestrator' component for Hikar.
  *
- * Automatically creates hikar-renderer and signpost-renderer components
- * and controls interaction between the gps-projected-camera and the Hikar
- * renderer components.
- *
+ * Automatically creates hikar-renderer and signpost-renderer components and
+ * handles location updates, distinguishing between simulated and real GPS.
+ * 
  * Does not do any standard '2D HTML', instead emits events which can be
  * handled by some other part of the application - index.js in the default
  * Hikar.
@@ -30,40 +29,43 @@ AFRAME.registerComponent('hikar', {
     },
 
     init: function() {
-        let lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
-
-        window.addEventListener('gps-camera-update-position', async(e)=> {
-            const curTime = new Date().getTime();
-            if(curTime - lastTime > 5000 && 
-                jsfreemaplib.haversineDist(
-                    e.detail.position.longitude, 
-                    e.detail.position.latitude, 
-                    lastPos.longitude, 
-                    lastPos.latitude) > 10) {
-                lastTime = curTime;
-                lastPos.latitude = e.detail.position.latitude;
-                lastPos.longitude = e.detail.position.longitude;
-                this._doUpdate(e.detail.position.longitude, e.detail.position.latitude);
-            }
-        });
-
-
+        // Set up fake-loc updates
         this.el.sceneEl.addEventListener( "fake-loc-updated", e => {
             this._doUpdate(e.detail.lon, e.detail.lat);
         });
     },
 
+    // if lon and lat properties are provided, do a 'simulated' update
+    // (one where the lon and lat are set as parrameters rather than from the
+    // GPS)
     update: function() {
         if(this.data.lon !== 0 && this.data.lat !== 0) {
+            // create a signpost renderer, we need to do this immediately 
+            // otherwise the osm-data-loaded event listener will never be
+            // attached to it
+            this.el.setAttribute('signpost-renderer', {
+                lon: this.data.lon, 
+                lat: this.data.lat
+            });
             this._doUpdate(this.data.lon, this.data.lat, false, true);
         }
     },
 
+    // Actually do the update. Signpost updating can be turned on or off
     _doUpdate: function(lon, lat, signpostUpdate = true, simulated = false) {
         this._updateHikarRenderer(lon, lat, simulated);
         if(signpostUpdate) {
-            this._updatePos(lon, lat);
+        //    this._updatePos(lon, lat);
+            // Added this
+            this.el.setAttribute('signpost-renderer', {
+                lon: lon,
+                lat: lat
+            });
         }
+        this.el.emit('pos-updated', {
+            lon: lon,
+            lat: lat
+        });
     },
 
     _updateHikarRenderer: function(lon, lat, simulated = false) {
@@ -75,18 +77,6 @@ AFRAME.registerComponent('hikar', {
                 'simulated' : simulated
         });
     },
-
-    _updatePos: function(lon, lat) {
-        this.el.emit('pos-updated', {
-            lon: lon,
-            lat: lat
-        });
-
-        this.el.setAttribute('signpost-renderer', {
-            lon: lon,
-            lat: lat
-        });
-    }
 });
 
 

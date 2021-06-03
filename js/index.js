@@ -18,7 +18,7 @@ require('./fake-loc');
  */
 
 window.onload = () => {
-    let state = 0;
+    let state = 0, lastTime = 0, lastPos = { latitude: 91, longitude: 181 };
     const parts = window.location.href.split('?');     
     const get = parts.length === 2 ? qs.parse(parts[1]): { };
 
@@ -63,9 +63,27 @@ window.onload = () => {
         // if we have a query string, append a fake-loc component to the camera
         // so we can move around using WASD
         camera.setAttribute('fake-loc', true);
-
+        camera.setAttribute('gps-projected-camera', {
+                simulateLatitude: get.lat,
+                simulateLongitude: get.lon
+        });
         hikarElement.setAttribute('lon', parseFloat(get.lon));
         hikarElement.setAttribute('lat', parseFloat(get.lat));
+    } else {
+         window.addEventListener('gps-camera-update-position', async(e)=> {
+            const curTime = new Date().getTime();
+            if(curTime - lastTime > 5000 &&
+                jsfreemaplib.haversineDist(
+                    e.detail.position.longitude,
+                    e.detail.position.latitude,
+                    lastPos.longitude,
+                    lastPos.latitude) > 10) {
+                lastTime = curTime;
+                lastPos.latitude = e.detail.position.latitude;
+                lastPos.longitude = e.detail.position.longitude;
+                this._doUpdate(e.detail.position.longitude, e.detail.position.latitude);
+            }
+        });
     } 
     
     hikarElement.addEventListener('elevation-available', e=> {
