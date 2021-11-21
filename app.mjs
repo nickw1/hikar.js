@@ -10,6 +10,8 @@ import db from './db/index.mjs';
 import expressSession from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import fetch from 'node-fetch';
+import morgan from 'morgan';
+import cors from 'cors';
 const pgSession = connectPgSimple(expressSession);
 const mapModel = new MapModel(db);
 const userModel = new UserModel(db);
@@ -18,6 +20,8 @@ const noticeboardModel = new NoticeboardModel(db);
 
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
+app.use(morgan('combined'));
+app.use(cors());
 
 // add noticeboard - /fm/ws/annotation.php?action=create&lon=$lon&lat=$lat&annotationType=$annotationType&text=$annotation, http auth (Authorization header), base64 encoded
 
@@ -46,7 +50,7 @@ const numRegex = /^\d+$/;
 const floatRegex = /^[\d\.\-]+$/;
 
 // Fake the old endpoint - necessary for the Hikar app to continue working 
-app.get('/fm/ws/tsvr.php', async(req, res) => {
+app.get('/tile', async(req, res) => {
     if(numRegex.exec(req.query.x) && numRegex.exec(req.query.y) && numRegex.exec(req.query.z)) {
         try {
             const mapData = await mapModel.getMap(
@@ -61,8 +65,8 @@ app.get('/fm/ws/tsvr.php', async(req, res) => {
     }
 });
 
-// Fake noticeboard endpoint from Hikar app
-app.post(['/annotation/create', '/fm/ws/annotation.php'], async(req, res) => {
+// Noticeboard endpoint from Hikar app
+app.post('/annotation/create', async(req, res) => {
     const auth = req.headers.authorization ? req.headers.authorization.split(' ') : null;
     if(auth && auth.length == 2) {
         const [user, pass] = Buffer.from(auth[1], 'base64').toString().split(':');
@@ -97,6 +101,17 @@ app.get('/dem/:z(\\d+)/:x(\\d+)/:y(\\d+).png', async(req, res) => {
     } catch(e) { 
         res.status(500).json({error: e});
     }
+});
+
+app.get('/songs/all', async(req, res)=> {
+	const dbres = await db.query("SELECT * FROM wadsongs ORDER BY ID");
+	const output = dbres.rows.map ( row => `${row.id}: ${row.title} by ${row.artist}, year ${row.year}, quantity ${row.quantity}<br />` ).join('');
+	res.send(output);
+});
+	
+app.get('/artist/:artist', async(req, res) => {
+	const dbres = await db.query('SELECT * FROM wadsongs WHERE artist=$1 ORDER BY ID', [req.params.artist]);
+	res.json(dbres.rows);
 });
 
 app.listen(3001);

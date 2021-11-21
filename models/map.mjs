@@ -55,7 +55,7 @@ export default class MapModel {
                             geometry: JSON.parse(row.geom),
                             properties: props
                         };
-                    } );
+                    } ).filter ( f => ['Point', 'LineString', 'MultiLineString','Polygon','MultiPolygon'].indexOf(f.geometry.type) >= 0); // do not send back anything the client cannot deal with
                     json.features.push(...features);
                 } else {
                     return Promise.reject({"error": "Cannot query db"});
@@ -67,4 +67,27 @@ export default class MapModel {
         }
         return json;
     }
+
+    async getPeaks(bbox) {
+        const sql = "select lon,lat,name,ele FROM (SELECT way, ST_X(ST_Transform(way, 4326)) as lon, ST_Y(ST_Transform(way, 4326)) as lat, name , ele FROM planet_osm_point where \"natural\"='peak' and name <> '') AS pqry where lon BETWEEN $1 AND $3 AND lat BETWEEN $2 AND $4";
+        console.log(sql);
+        const dbres = await this.db.query(sql, bbox);
+        return {
+            type: "FeatureCollection",
+            features: dbres.rows.map (row => {
+                return {
+                    type: "Feature",
+                    geometry: {
+                        type: "Point",
+                        coordinates: [ row.lon, row.lat ]
+                    },
+                    properties: {
+                        name: row.name,
+                        ele: parseFloat(row.ele)
+                    }
+                };
+            })
+        };
+    }
+    
 }
