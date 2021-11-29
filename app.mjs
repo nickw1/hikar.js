@@ -103,15 +103,4 @@ app.get('/dem/:z(\\d+)/:x(\\d+)/:y(\\d+).png', async(req, res) => {
     }
 });
 
-app.get('/songs/all', async(req, res)=> {
-	const dbres = await db.query("SELECT * FROM wadsongs ORDER BY ID");
-	const output = dbres.rows.map ( row => `${row.id}: ${row.title} by ${row.artist}, year ${row.year}, quantity ${row.quantity}<br />` ).join('');
-	res.send(output);
-});
-	
-app.get('/artist/:artist', async(req, res) => {
-	const dbres = await db.query('SELECT * FROM wadsongs WHERE artist=$1 ORDER BY ID', [req.params.artist]);
-	res.json(dbres.rows);
-});
-
 app.listen(3001);
