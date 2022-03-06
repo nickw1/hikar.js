@@ -54,7 +54,7 @@ app.get('/tile', async(req, res) => {
     if(numRegex.exec(req.query.x) && numRegex.exec(req.query.y) && numRegex.exec(req.query.z)) {
         try {
             const mapData = await mapModel.getMap(
-                req.query, ['ways', 'pois']
+                req.query, ['ways', 'poi']
             );
             res.json(mapData);
         } catch(e) {

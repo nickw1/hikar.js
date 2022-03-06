@@ -15,7 +15,7 @@ export default class MapModel {
                 'table' : 'planet_osm_line',
                 'conditions': "highway <> ''"
             }, 
-            'pois': {
+            'poi': {
                 'cols' : 'name, "natural", place, amenity',
                 'table' : 'planet_osm_point',
                 'conditions': "place <> '' OR amenity <> '' OR \"natural\" <> '' OR railway <> '' OR tourism <> ''"
@@ -33,6 +33,15 @@ export default class MapModel {
     async getMap({x, y, z} , layers, outProj = null) {
         const tile = new jsfreemaplib.Tile(parseInt(x), parseInt(y), parseInt(z));
         const bl = tile.getBottomLeft(), tr = tile.getTopRight();
+        return await this.doGetMap(bl, tr, layers, outProj);
+    }
+
+    async getByBbox([w, s, e, n], layers, outProj = null) {
+        const proj = new jsfreemaplib.GoogleProjection();
+        return await this.doGetMap(proj.project(w, s), proj.project(e, n), layers, outProj);
+    }
+
+    async doGetMap(bl, tr, layers, outProj) {    
         const json = { "type": "FeatureCollection", "features": [] };
         let geomCol, sql, idCol;
         for(const layer of layers.filter( lyr => this.layerData[lyr] !== undefined ))  {
@@ -68,8 +77,8 @@ export default class MapModel {
         return json;
     }
 
-    async getPeaks(bbox) {
-        const sql = "select lon,lat,name,ele FROM (SELECT way, ST_X(ST_Transform(way, 4326)) as lon, ST_Y(ST_Transform(way, 4326)) as lat, name , ele FROM planet_osm_point where \"natural\"='peak' and name <> '') AS pqry where lon BETWEEN $1 AND $3 AND lat BETWEEN $2 AND $4";
+    async getPoisByBbox(bbox) {
+        const sql = "select lon,lat,name,ele FROM (SELECT way, ST_X(ST_Transform(way, 4326)) as lon, ST_Y(ST_Transform(way, 4326)) as lat, name , ele FROM planet_osm_point where name <> '') AS pqry where lon BETWEEN $1 AND $3 AND lat BETWEEN $2 AND $4";
         console.log(sql);
         const dbres = await this.db.query(sql, bbox);
         return {
