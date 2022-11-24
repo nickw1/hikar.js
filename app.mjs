@@ -50,7 +50,7 @@ const numRegex = /^\d+$/;
 const floatRegex = /^[\d\.\-]+$/;
 
 // Fake the old endpoint - necessary for the Hikar app to continue working 
-app.get('/tile', async(req, res) => {
+app.get(['/tile','/fm/ws/tsvr.php'], async(req, res) => {
     if(numRegex.exec(req.query.x) && numRegex.exec(req.query.y) && numRegex.exec(req.query.z)) {
         try {
             const mapData = await mapModel.getMap(
@@ -66,7 +66,7 @@ app.get('/tile', async(req, res) => {
 });
 
 // Noticeboard endpoint from Hikar app
-app.post('/annotation/create', async(req, res) => {
+app.post(['/annotation/create','/fm/ws/annotation.php'], async(req, res) => {
     const auth = req.headers.authorization ? req.headers.authorization.split(' ') : null;
     if(auth && auth.length == 2) {
         const [user, pass] = Buffer.from(auth[1], 'base64').toString().split(':');
