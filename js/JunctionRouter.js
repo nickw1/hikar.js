@@ -8,12 +8,12 @@
 //
 // Requires bugfixed/enhanced geojson-path-finder; bundled with Hikar. 
 
-const jsFreemaplib = require('jsfreemaplib');
-const PathFinder = require('./geojson-path-finder'); 
+import * as jsFreemaplib from 'jsfreemaplib';
+import PathFinder from 'geojson-path-finder-nw'; 
 const BoundingBox = jsFreemaplib.BoundingBox;
-const VertexDetector = require('./VertexDetector');
-const turfPoint = require('turf-point');
-const turfBearing = require('@turf/bearing').default;
+import VertexDetector from './VertexDetector.js';
+import  { point as turfPoint } from '@turf/helpers';
+import turfBearing from '@turf/bearing';
 
 
 class JunctionRouter {
@@ -301,4 +301,4 @@ class JunctionRouter {
     }
 }
 
-module.exports = JunctionRouter;
+export default JunctionRouter;

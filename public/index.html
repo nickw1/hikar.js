@@ -1,37 +1,30 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-<meta charset="utf-8" />
-<title>Hikar Webapp - Hikar in your Browser with AR.js</title>
-<script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-<script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-<script src="js/bundle.js"></script>
-<link rel='stylesheet' type='text/css' href='css/webapp.css' />
-<link rel='manifest' href='hikar.webmanifest' />
-</head>
-
-<body>
-    <a-scene
-        vr-mode-ui="enabled: false"
-        arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false;'
-        renderer='antialias: true; alpha: true'>
-        <a-assets>
-            <a-asset-item id='signpost-obj' src='assets/nick_metal_sign_post.obj'></a-asset-item>
-            <a-asset-item id='signpost-arm-obj' src='assets/nick_metal_sign_post_arm.obj'></a-asset-item>
-            <img id="signpost-texture" src='assets/signpost_textures.png' />
-        </a-assets>
-        <div id='status'></div>
-        <div id='hud'>
-            FOV<span id='fov'></span>
-            Lat<span id='lat'></span>
-            Lon<span id='lon'></span>
-            Alt<span id='alt'></span>m
-        </div>
-        <a-camera id='camera1' look-controls-enabled='false' near="0.1" far="50000" fov="80" arjs-look-controls='smoothingFactor: 0.1' gps-projected-camera='gpsMinDistance: 5' rotation-reader vertical-controls wasd-controls="acceleration: 1300"> </a-camera>
-        <a-hikar terrarium-dem='zoom: 13; url: dem/{z}/{x}/{y}.png' osm3d='url: map/{z}/{x}/{y}.json?outProj=4326; emitRawData: true'></a-hikar>
-    </a-scene>
-</body>
-
+    <head>
+        <meta charset='utf-8' />
+        <title>AR.js osm example</title>
+        <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+        <script type='text/javascript' src='https://raw.githack.com/AR-js-org/AR.js/master/three.js/build/ar-threex-location-only.js'></script>
+        <script type='text/javascript' src='https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js'></script>
+        <script type='text/javascript' src='dist/app/bundle.js'></script>
+        <link rel='stylesheet' type='text/css' href='css/webapp.css' />
+    </head>
+    <body style='margin: 0; overflow: hidden'>
+        <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false'>
+            <a-assets>
+                <a-asset-item id='signpost-obj' src='assets/nick_metal_sign_post.obj'></a-asset-item>
+                <a-asset-item id='signpost-arm-obj' src='assets/nick_metal_sign_post_arm.obj'></a-asset-item>
+                <img id="signpost-texture" src='assets/signpost_textures.png' />
+            </a-assets>
+            <div id='status'></div>
+            <div id='hud'>
+                FOV<span id='fov'></span>
+                Lat<span id='lat'></span>
+                Lon<span id='lon'></span>
+                Alt<span id='alt'></span>m
+            </div>
+            <a-camera gps-new-camera='simulateLatitude: 51.049; simulateLongitude: -0.723' position='0 20 0' vertical-controls wasd-controls='acceleration: 1300'></a-camera>
+            <a-entity hikar terrarium-dem='zoom: 13; url: https://hikar.org/webapp/dem/{z}/{x}/{y}.png' osm3d='url: https://hikar.org/webapp/map/{z}/{x}/{y}.json?outProj=4326; emitRawData: true'></a-entity>
+        </a-scene>
+    </body>
 </html>

@@ -1,8 +1,8 @@
-const JunctionRouter = require('./JunctionRouter');
-const GoogleProjection = require('jsfreemaplib').GoogleProjection;
-const turfDistance = require('@turf/distance').default;
-const turfPoint = require('turf-point');
-const turfBearing = require('@turf/bearing').default;
+import JunctionRouter from './JunctionRouter.js';
+import { GoogleProjection } from 'jsfreemaplib';
+import turfDistance from '@turf/distance';
+import { point as turfPoint } from '@turf/helpers';
+import turfBearing from '@turf/bearing';
 
 
 class SignpostManager {
@@ -134,4 +134,4 @@ class SignpostManager {
     }
 }
 
-module.exports = SignpostManager;
+export default SignpostManager;

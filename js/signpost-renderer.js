@@ -23,17 +23,13 @@ AFRAME.registerComponent('signpost-renderer', {
         },
         worker: {
             type: 'string',
-            default: 'js/bundleworker.js'
+            default: 'dist/worker/bundle.js'
         },
         lat: {
             type: 'number'
         },
         lon: {
             type: 'number'
-        },
-        camera: {
-            type: 'string',
-            default: 'camera1'
         }
     },
 
@@ -41,7 +37,7 @@ AFRAME.registerComponent('signpost-renderer', {
         this.worker = new Worker(this.data.worker);
         this.osmHasLoaded = false;
 
-        const camera = this.el.sceneEl.querySelector(`#${this.data.camera}`); 
+        const camera = this.el.sceneEl.querySelector('[gps-new-camera]'); 
         
         this.armTextProps = [
             [-0.4, -90, 'left'],
@@ -106,7 +102,7 @@ AFRAME.registerComponent('signpost-renderer', {
 
         this.el.addEventListener('new-signpost', e=> {
             const signpost = e.detail.signpost.signpost;
-            const world = camera.components['gps-projected-camera'].latLonToWorld(e.detail.signpost.position[1], e.detail.signpost.position[0]);
+            const world = camera.components['gps-new-camera'].threeLoc.lonLatToWorldCoords(e.detail.signpost.position[0], e.detail.signpost.position[1]);
             const signpostArmEntities = [];
             Object.keys(signpost).forEach ( bearing => {
                 const text = this._getRenderedText(signpost[bearing]);

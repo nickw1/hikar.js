@@ -1,5 +1,5 @@
-const turfDistance = require('@turf/distance').default;
-const turfPoint = require('turf-point');
+import turfDistance from '@turf/distance';
+import { point as turfPoint } from '@turf/helpers';
 
 /*
 
@@ -86,4 +86,4 @@ class VertexDetector {
     }
 }
 
-module.exports = VertexDetector;
+export default VertexDetector;

@@ -1,4 +1,4 @@
-const SignpostManager = require('./SignpostManager');
+import SignpostManager from './SignpostManager.js';
 
 let sMgr = null; 
 

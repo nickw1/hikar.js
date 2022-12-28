@@ -1,18 +1,18 @@
-const jsfreemaplib = require('jsfreemaplib');
 
 module.exports = AFRAME.registerComponent('hikar-renderer', {
     schema: {
         position: {
             type: 'vec2'
         },
-        camera: {
-            type: 'string',
-            default: 'camera1'
+
+        snapToGround: {
+            type: 'boolean',
+            default: true
         }
     },
 
     init: function() {
-        const camera = this.el.sceneEl.querySelector(`#${this.data.camera}`); 
+        const camera = this.el.sceneEl.querySelector('[gps-new-camera]'); 
         this.el.addEventListener('terrarium-dem-loaded', async(e) => {
             this.el.emit('hikar-status-change', { 
                 status: "Loading OSM data...",
@@ -27,24 +27,12 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
             });
         });
 
-        this.el.addEventListener('elevation-available', e=> {
-            const position = camera.getAttribute("position");
-            position.y = e.detail.elevation + 1.6; // account for camera being above ground
-            camera.setAttribute("position", position);
-        });
 
         this.el.addEventListener('osm-data-loaded', e=> {
             this.el.emit('hikar-status-change', { 
                 status: "",
             });
-            if(camera.components['gps-projected-camera']) {
-                if(!this.originSphMerc) {
-                    this.originSphMerc = camera.components['gps-projected-camera'].originCoords;
-                }
-                e.detail.renderedWays.forEach ( mesh => {
-                    mesh.geometry.translate(-this.originSphMerc[0], 0, this.originSphMerc[1]);
-                });
-
+            if(camera.components['gps-new-camera']) {
                 e.detail.pois.forEach ( poi => {
                     if(poi.properties.name !== undefined) {
                         const text = document.createElement('a-text');
@@ -52,7 +40,7 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                         text.setAttribute('font', "assets/Roboto-Regular-msdf.json");
                         text.setAttribute('font-image', "assets/Roboto-Regular.png");
                         text.setAttribute('negate', false); 
-                        text.setAttribute('gps-projected-entity-place', {
+                        text.setAttribute('gps-new-entity-place', {
                             latitude: poi.geometry.coordinates[1],
                             longitude: poi.geometry.coordinates[0]
                         });
@@ -66,12 +54,12 @@ module.exports = AFRAME.registerComponent('hikar-renderer', {
                             y: 100,
                             z: 100
                         });
-                        text.setAttribute('look-at','[gps-projected-camera]');
+                        text.setAttribute('look-at','[gps-new-camera]');
                         this.el.appendChild(text);
                     }
                 });
             } else {
-                console.error('gps-projected-camera not initialised yet.');
+                console.error('gps-new-camera not initialised yet.');
             }
         });
     },

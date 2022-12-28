@@ -1,6 +1,6 @@
 const KEY_Q = 81, KEY_Z = 90;
 
-module.exports = AFRAME.registerComponent('vertical-controls', {
+AFRAME.registerComponent('vertical-controls', {
     init: function() {
         window.addEventListener('keydown', this.onKeyDown.bind(this));
         window.addEventListener('keyup', this.onKeyUp.bind(this));
