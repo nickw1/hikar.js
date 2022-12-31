@@ -4,6 +4,7 @@ AFRAME.registerComponent('pinch-detector', {
         this.allUntouches = [];
         this.left = { };
         this.right = { };
+        console.log('pinch-detector init');
     },
 
     play: function() {

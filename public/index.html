@@ -23,8 +23,8 @@
                 Lon<span id='lon'></span>
                 Alt<span id='alt'></span>m
             </div>
-            <a-camera gps-new-camera='simulateLatitude: 51.049; simulateLongitude: -0.723' position='0 20 0' vertical-controls wasd-controls='acceleration: 1300'></a-camera>
-            <a-entity hikar terrarium-dem='zoom: 13; url: https://hikar.org/webapp/dem/{z}/{x}/{y}.png' osm3d='url: https://hikar.org/webapp/map/{z}/{x}/{y}.json?outProj=4326; emitRawData: true'></a-entity>
+            <a-camera gps-new-camera='simulateLatitude: 51.049; simulateLongitude: -0.723' position='0 20 0' vertical-controls wasd-controls='acceleration: 1300' fov='80'></a-camera>
+            <a-entity hikar terrarium-dem='zoom: 13; url: https://hikar.org/webapp/dem/{z}/{x}/{y}.png' osm3d='url: https://hikar.org/webapp/map/{z}/{x}/{y}.json?outProj=4326; emitRawData: true' pinch-detector></a-entity>
         </a-scene>
     </body>
 </html>

@@ -1,10 +1,9 @@
-//import 'aframe';
-//import '@ar-js-org/ar.js';
 import './hikar.js';
 import './hikar-renderer.js';
 import './signpost-renderer.js';
 import './fake-gps.js';
 import './vertical-controls.js';
+import './pinch-detector.js';
 import * as qs from 'qs';
 import 'aframe-osm-3d';
 
@@ -17,6 +16,7 @@ window.onload = () => {
     const cameraEl = document.querySelector("[gps-new-camera]");
 
     cameraEl.object3D.position.y = 100;
+    document.getElementById('fov').innerHTML = cameraEl.getAttribute('fov');
 
     if(get.fakeGps) {
         cameraEl.setAttribute("fake-gps", { });
@@ -30,6 +30,8 @@ window.onload = () => {
                 lat: e.detail.position.latitude,
                 snapToGround: !e.detail.fake
             });
+            document.getElementById('lon').innerHTML = e.detail.position.longitude.toFixed(4);
+            document.getElementById('lat').innerHTML = e.detail.position.latitude.toFixed(4);
             document.getElementById("status").innerHTML = "Downloading elevation data...";
         }
     });
@@ -43,6 +45,16 @@ window.onload = () => {
 
     hikarEl.addEventListener("hikar-status-change", e => {
         document.getElementById("status").innerHTML = e.detail.status;
+    });
+
+    hikarEl.addEventListener('elevation-available', e=> {
+        document.getElementById('alt').innerHTML = Math.round(e.detail.elevation);
+    });
+
+    hikarEl.addEventListener('nw-pinch', e=> {
+        const fov = parseFloat(cameraEl.getAttribute('fov')) + e.detail.direction * 10;
+        cameraEl.setAttribute('fov', fov);
+        document.getElementById('fov').innerHTML = fov;
     });
 
 /*

@@ -1,18 +1,16 @@
 {
     "name": "hikar.js",
-    "version": "0.2.0",
+    "version": "0.2.0+dev",
     "description": "Hikar - the webapp. Using AR.js.",
     "scripts": {
         "build": "npx webpack"
     },
     "dependencies": {
-        "@ar-js-org/ar.js": "3.4.2",
         "@turf/bearing": "^6.3.0",
         "@turf/distance": "^6.3.0",
         "@turf/explode": "^5.1.0",
         "@turf/helpers": "^6.3.0",
         "acorn": "^8.8.1",
-        "aframe": "1.0.4",
         "aframe-osm-3d": "^0.5.2",
         "bcrypt": "^5.0.1",
         "connect-pg-simple": "^7.0.0",
