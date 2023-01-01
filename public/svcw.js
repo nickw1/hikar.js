@@ -8,8 +8,8 @@ const urlsToCache = [
 ];
 
 const cachableOnResponse = [
-    'fm/ws/tsvr.php',
-    'webapp/proxy.php'
+    '.png',
+    '.json'
 ];
 
 self.addEventListener('install', ev=> {
