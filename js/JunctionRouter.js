@@ -55,6 +55,7 @@ class JunctionRouter {
                 },
 				edgeDataSeed: (props) => {
                     return {
+                        seed: 1,
                         highway: props.highway,
                         foot: props.foot,
                         designation: props.designation,
@@ -112,7 +113,8 @@ class JunctionRouter {
                         
                 const route = this.calcPath(snappedNodes);
 
-                if(route!=null && route.path.length>=2 && route.edgeDatas[0].reducedEdge.isAccessiblePath) {
+                console.log(route);
+                if(route!=null && route.path.length>=2 && route.edgeDatas[0].isAccessiblePath) {
                     // calculate the real distance of the path (weight is now
                     // adjusted - see above)
                    
@@ -131,8 +133,8 @@ class JunctionRouter {
                     // route is on a road, allowing us to reject road-heavy
                     // routings to POIs.
                     const pathDist = route.edgeDatas.reduce ( (acc, val, index, arr) => {
-                        const realDist = this.vDet.findEdgeWeightByKeys(val.reducedEdge.v1, val.reducedEdge.v2) / (val.reducedEdge.isAccessiblePath ? 1 : this.roadCost);
-                        return [acc[0] + realDist, acc[1] + (val.reducedEdge.isAccessiblePath ? realDist: 0)];
+                        const realDist = this.vDet.findEdgeWeightByKeys(val.v1, val.v2) / (val.isAccessiblePath ? 1 : this.roadCost);
+                        return [acc[0] + realDist, acc[1] + (val.isAccessiblePath ? realDist: 0)];
                         }, [0,0]);
 
                     if(dist < this.minPathProportionOverride || pathDist[1]/pathDist[0] >= this.minPathProportion) {
