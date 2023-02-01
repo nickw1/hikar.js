@@ -18,7 +18,7 @@ the distances/weights to adjoining vertices
 edgeData:
 edge properties from edgeDataReduceFn
 
-sourceVertices:
+sourceVertices: (RENAMED sourceCoordinates in 2.0)
 the full original non-rounded coordinates for each vertex
 
 vertices:
@@ -29,7 +29,7 @@ distance/weights to adjoining vertices (non-compacted version)
 class VertexDetector {
 
     constructor(pathFinder) {
-        this.graph = pathFinder.serialize();
+        this.graph = pathFinder.graph;
     }
 
     findNearestVertex(p, junctionOnly = false) {
@@ -40,19 +40,20 @@ class VertexDetector {
                 return Object.keys(this.graph.vertices[k]).length >= 3
             }) : Object.keys(this.graph.vertices);
 
+
         vertices
             .filter(k => this.graph.compactedCoordinates[k] !== undefined)
             .forEach(k => {
-                const dist = turfDistance(turfPoint(p), turfPoint(this.graph.sourceVertices[k]));
+                const dist = turfDistance(turfPoint(p), turfPoint(this.graph.sourceCoordinates[k]));
                 if(dist < vertex[1]) {
                     vertex[1] = dist;
-                    vertex[0] = this.graph.sourceVertices[k].slice(0);
+                    vertex[0] = this.graph.sourceCoordinates[k].slice(0);
                     vertex[2] = { };
                     // Note - the compactedCoordinates do not include the destination vertex so we have to add it
                     Object.keys(this.graph.compactedCoordinates[k])
                         .forEach ( kk => {
 //                            const dest = kk.split(',');
-                            const dest = this.graph.sourceVertices[kk].slice(0);
+                            const dest = this.graph.sourceCoordinates[kk].slice(0);
                             vertex[2][kk] = {
                                 coords : this.graph.compactedCoordinates[k][kk]
                                     .slice(0)

@@ -9,7 +9,8 @@
 // Requires bugfixed/enhanced geojson-path-finder; bundled with Hikar. 
 
 import * as jsFreemaplib from 'jsfreemaplib';
-import PathFinder from 'geojson-path-finder-nw'; 
+//import PathFinder from 'geojson-path-finder-nw'; 
+import PathFinder from 'geojson-path-finder';
 const BoundingBox = jsFreemaplib.BoundingBox;
 import VertexDetector from './VertexDetector.js';
 import  { point as turfPoint } from '@turf/helpers';
@@ -40,18 +41,26 @@ class JunctionRouter {
         if(geojson.features.length > 0) {
             geojson = this.insertIntoNetwork(geojson, pois);
             this.pathFinder = new PathFinder(geojson, { 
-                precision: 0.00001,    
-                weightFn: (a, b, props) => {
-                return jsFreemaplib.haversineDist(a[0], a[1], b[0], b[1]) * (this._isAccessiblePath(props) ? 1.0 : this.roadCost) * 0.001; // weighting is as for Hikar Android app 0.3.x
+                tolerance: 0.00001,    
+                weight: (a, b, props) => {
+                    return jsFreemaplib.haversineDist(a[0], a[1], b[0], b[1]) * (this._isAccessiblePath(props) ? 1.0 : this.roadCost) * 0.001; // weighting is as for Hikar Android app 0.3.x
                 },
-                edgeDataReduceFn: (seed, props) => {
+                edgeDataReducer: (seed, props) => {
                     return {
                         highway: props.highway,
                         foot: props.foot,
                         designation: props.designation,
                         isAccessiblePath: this._isAccessiblePath(props)
                     };
-                }
+                },
+				edgeDataSeed: (props) => {
+                    return {
+                        highway: props.highway,
+                        foot: props.foot,
+                        designation: props.designation,
+                        isAccessiblePath: this._isAccessiblePath(props)
+                    };
+				}
             } );
             this.vDet = new VertexDetector(this.pathFinder);
         } else {
@@ -269,7 +278,10 @@ class JunctionRouter {
             f2 = { geometry: { type: 'Point',
             coordinates: points[1] }};
 
-        return this.pathFinder.findPath(f1, f2);
+        console.log(`finding path ${f1} to ${f2}`);
+		const path = this.pathFinder.findPath(f1, f2);
+		console.log(path);
+		return path;
     }
 
     makeNewWay(way) {

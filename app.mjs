@@ -50,6 +50,7 @@ const numRegex = /^\d+$/;
 const floatRegex = /^[\d\.\-]+$/;
 
 // Fake the old endpoint - necessary for the Hikar app to continue working 
+// https://hikar.org/webapp/fm/ws/tsvr.php?x=4079&y=2740&z=13&outProj=3857&way=highway&ann=1&poi=place,amenity,natural,railway,tourism
 app.get(['/tile','/fm/ws/tsvr.php'], async(req, res) => {
     if(numRegex.exec(req.query.x) && numRegex.exec(req.query.y) && numRegex.exec(req.query.z)) {
         try {

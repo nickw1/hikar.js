@@ -2,8 +2,8 @@
 const CACHE_NAME = 'hikarCache';
 const urlsToCache = [
     'index.html',
-    'dist/app/bundle.js',
-    'dist/worker/bundle.js',
+//    'dist/app/bundle.js',
+//    'dist/worker/bundle.js',
     'css/webapp.css'
 ];
 
