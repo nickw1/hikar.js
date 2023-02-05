@@ -55,11 +55,9 @@ class JunctionRouter {
                 },
 				edgeDataSeed: (props) => {
                     return {
-                        seed: 1,
                         highway: props.highway,
                         foot: props.foot,
-                        designation: props.designation,
-                        isAccessiblePath: this._isAccessiblePath(props)
+                        designation: props.designation
                     };
 				}
             } );
@@ -132,6 +130,7 @@ class JunctionRouter {
                     // it's good enough for evaluating what proportion of the
                     // route is on a road, allowing us to reject road-heavy
                     // routings to POIs.
+
                     const pathDist = route.edgeDatas.reduce ( (acc, val, index, arr) => {
                         const realDist = this.vDet.findEdgeWeightByKeys(val.v1, val.v2) / (val.isAccessiblePath ? 1 : this.roadCost);
                         return [acc[0] + realDist, acc[1] + (val.isAccessiblePath ? realDist: 0)];
