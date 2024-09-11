@@ -11,7 +11,7 @@
         "@turf/explode": "^5.1.0",
         "@turf/helpers": "^6.3.0",
         "acorn": "^8.8.1",
-        "aframe-osm-3d": "^0.5.2",
+        "aframe-osm-3d": "^0.5.3",
         "bcrypt": "^5.0.1",
         "connect-pg-simple": "^7.0.0",
         "cors": "^2.8.5",
