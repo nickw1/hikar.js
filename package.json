@@ -1,41 +1,31 @@
 {
-    "name": "hikar.js",
-    "version": "0.2.0+dev",
-    "description": "Hikar - the webapp. Using AR.js.",
-    "scripts": {
-        "build": "npx webpack"
-    },
-    "dependencies": {
-        "@turf/bearing": "^6.3.0",
-        "@turf/distance": "^6.3.0",
-        "@turf/explode": "^5.1.0",
-        "@turf/helpers": "^6.3.0",
-        "acorn": "^8.8.1",
-        "aframe-osm-3d": "^0.5.3",
-        "bcrypt": "^5.0.1",
-        "connect-pg-simple": "^7.0.0",
-        "cors": "^2.8.5",
-        "dotenv": "^8.2.0",
-        "express": "^4.18.2",
-        "express-session": "^1.17.2",
-        "geojson-path-finder-nw": "^1.6.2",
-        "jsfreemaplib": "^0.4.0",
-        "morgan": "^1.10.0",
-        "node-fetch": "^3.0.0",
-        "pg": "^8.5.1",
-        "qs": "^6.11.0",
-        "tinyqueue": "^2.0.0",
-        "turf-point": "^2.0.1"
-    },
-    "devDependencies": {
-        "webpack": "^5.75.0",
-        "webpack-cli": "^5.0.0",
-        "node-polyfill-webpack-plugin": "^1.1.0"
-    },
-    "author": "Nick Whitelegg",
-    "license": "GPL-3.0",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/nickw1/hikar.js.git"
-    }
+  "devDependencies": {
+    "vite": "^7.2.4",
+    "@vitejs/plugin-react": "^5.1.1"
+  },
+  "dependencies": {
+    "@omnidotdev/rdk": "^0.2.2",
+    "@react-three/fiber": "^9.4.0",
+    "@turf/bearing": "^7.3.0",
+    "@turf/distance": "^7.3.0",
+    "@turf/explode": "^7.3.0",
+    "@turf/helpers": "^7.3.0",
+    "connect-pg-simple": "^10.0.0",
+    "express": "^5.1.0",
+    "geojson-path-finder-nw": "^1.6.2",
+    "jsfreemaplib": "^0.4.0",
+    "locar": "^0.1.4",
+    "pg": "^8.5.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tinyqueue": "^3.0.0",
+    "turf-point": "^2.0.1",
+    "typescript": "^5.9.3",
+    "vite-express": "^0.21.1"
+  }, 
+  "scripts": {
+    "dev": "node server.mjs",
+    "build": "npx vite build",
+    "start": "NODE_ENV=production node server.mjs"
+  }
 }
