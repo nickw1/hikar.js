@@ -4,7 +4,7 @@
     "@vitejs/plugin-react": "^5.1.1"
   },
   "dependencies": {
-    "@omnidotdev/rdk": "^0.2.2",
+    "@omnidotdev/rdk": "0.5.1",
     "@react-three/fiber": "^9.4.0",
     "@turf/bearing": "^7.3.0",
     "@turf/distance": "^7.3.0",
@@ -14,7 +14,7 @@
     "express": "^5.1.0",
     "geojson-path-finder-nw": "^1.6.2",
     "jsfreemaplib": "^0.4.0",
-    "locar": "^0.1.4",
+    "locar": "^0.1.7",
     "pg": "^8.5.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

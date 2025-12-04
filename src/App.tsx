@@ -7,8 +7,11 @@ export default function App() {
     return <Canvas gl={{antialias: false, powerPreference: "default"}}>
         <ambientLight intensity={1.0} />
         <directionalLight position={[10, 10, 10]}  intensity={2} />
-        <XR cameraSource="video">
-        <GeolocationSession options={{ fakeLat: 51.05, fakeLon: -0.72 }}>
+        <XR>
+        <GeolocationSession options={{ 
+            fakeLat: 51.05, fakeLon: -0.72,
+            onGpsUpdate: handleGpsUpdate,
+        }}>
         <GeolocationAnchor
             latitude={51.0505} 
             longitude={-0.72}>
@@ -20,4 +23,8 @@ export default function App() {
         </GeolocationSession>
         </XR>
         </Canvas>;
+
+    function handleGpsUpdate(pos, distMoved) {
+        console.log(JSON.stringify(pos));
+    }
 }
