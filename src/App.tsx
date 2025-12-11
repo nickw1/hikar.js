@@ -1,4 +1,3 @@
-import React from 'react';
 import { XR, GeolocationSession, GeolocationAnchor } from '@omnidotdev/rdk';
 import { Canvas } from '@react-three/fiber';
 
@@ -24,7 +23,7 @@ export default function App() {
         </XR>
         </Canvas>;
 
-    function handleGpsUpdate(pos, distMoved) {
-        console.log(JSON.stringify(pos));
+    function handleGpsUpdate(pos: GeolocationPosition, distMoved: number) {
+        console.log(`${JSON.stringify(pos)} ${distMoved}`);
     }
 }
