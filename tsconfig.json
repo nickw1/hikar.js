@@ -13,5 +13,5 @@
     "skipLibCheck": true,
     "jsx" :"react-jsx"
   },
-  "files": ["server.ts", "src/index.tsx", "src/App.tsx"]
+  "include": ["server.ts", "**/*.ts", "**/*.tsx"]
 }

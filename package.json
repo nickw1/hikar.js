@@ -15,6 +15,7 @@
     "@turf/helpers": "^7.3.0",
     "@types/express": "^5.0.6",
     "@types/node": "^24.10.1",
+    "@types/pg": "^8.16.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "connect-pg-simple": "^10.0.0",
@@ -22,13 +23,15 @@
     "geojson-path-finder-nw": "^1.6.2",
     "jsfreemaplib": "^0.4.0",
     "locar": "^0.1.7",
+    "locar-tiler": "^0.1.2",
     "pg": "^8.5.1",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "tinyqueue": "^3.0.0",
     "turf-point": "^2.0.1",
     "typescript": "^5.9.3",
-    "vite-express": "^0.21.1"
+    "vite-express": "^0.21.1",
+    "zustand": "^5.0.9"
   },
   "scripts": {
     "dev": "tsc --noEmit && tsx server.ts",
