@@ -9,6 +9,7 @@ interface Poi {
 	position: LT.LonLat;
     name: string;
     type: string;
+    osm_id: string;
 }
 
 interface PoiState {
@@ -30,7 +31,7 @@ export default function App() {
 	const tiler = useRef(new LT.JsonTiler("/map/{z}/{x}/{y}.json?layers=poi&outProj=4326"));
 
     const renderedPois = pois.map ( poi => 
-		<GeolocationAnchor latitude={poi.position.lat}
+		<GeolocationAnchor key={poi.osm_id} latitude={poi.position.lat}
 			longitude={poi.position.lon}>
 		<mesh scale={1}>
 		<boxGeometry args={[10, 10, 10]} />
@@ -73,8 +74,9 @@ export default function App() {
 					    poiData.geometry.coordinates[0],
 					    poiData.geometry.coordinates[1],
                     ),
-                    name: poiData.properties["name"] || "",
-                    type: ""
+                    name: poiData.properties.name || "",
+                    type: "",
+                    osm_id: poiData.properties.osm_id
 				});
 			}
 		}
