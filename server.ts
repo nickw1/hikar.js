@@ -22,13 +22,11 @@ app.get('/dem/:z/:x/:y.png', async(req, res) => {
                 .on('error', (e: any) => {
                     const notFound = e.code == 'ENOENT';
                     res.status(notFound ? 404 : 500)
-                        .json({
-                            "error": 
-                            notFound ? 
-                            "Can't find file": 
-                            "Unknown error loading tile"
+                       .json({
+                            "error": notFound ?  "Can't find file": "Unknown error loading tile"
                         })
-                    }).pipe(res);
+                    })
+                .pipe(res);
         } else {        
             res.status(400).json({error:"x, y and z must be integers"});
         }
