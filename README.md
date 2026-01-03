@@ -16,7 +16,7 @@ Also available, a video [here](https://hikar.org/video/hikarweb.mp4) of this old
 
 ### New version using LocAR.js and RDK
 
-However, Hikar is being rewritten to use [LocAR.js](https://github.com/AR-js-org/locar.js) and [RDK](https://github.com/omnidotdev/rdk). This can be found in the `master` branch, which has been made the default branch as it is currently being actively worked on, unlike the old version which will almost certainly see no further work other than critical bugfixes.
+However, Hikar is being rewritten to use [LocAR.js](https://github.com/AR-js-org/locar.js) and [RDK](https://github.com/omnidotdev/rdk). This can be found in the `master` branch.
 
 Amongst other things this will allow Hikar to support iOS and will also allow it to incorporate the latest features of LocAR.js and RDK, both of which are actively being developed.
 
