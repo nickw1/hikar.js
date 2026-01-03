@@ -7,6 +7,9 @@ import type { FeatureCollection, Feature, LayerKey, LayerData } from '../types/h
 // 301021 output data in Spherical Mercator projection so it can be used in Hikar app without change
 
 
+// This is code from the original (A-Frame) version of hikar.js.
+// It has been converted to TypeScript; this TypeScript version specifically
+// has been relicensed under MIT. The original is licensed under the GPL.
 
 export default class MapModel {
 
