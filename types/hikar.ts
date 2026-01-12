@@ -1,10 +1,12 @@
 
 export interface PointGeometry {
-    coordinates: number[];
+    coordinates: [number,number] | [number,number,number];
+    type: string;
 }
 
 export interface LineGeometry {
-    coordinates: number[][];
+    coordinates: Array<[number,number] | [number,number,number]>; 
+    type: string;
 }
 
 export interface Feature {

@@ -6,7 +6,8 @@
   },
   "dependencies": {
     "@ar-js-org/ar.js": "^3.4.7",
-    "@omnidotdev/rdk": "0.5.2",
+    "@omnidotdev/rdk": "0.7.0",
+    "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.0",
     "@react-three/xr": "^6.6.28",
     "@turf/bearing": "^7.3.0",
@@ -24,7 +25,7 @@
     "geojson-path-finder-nw": "^1.6.2",
     "jsfreemaplib": "^0.4.0",
     "locar": "^0.1.7",
-    "locar-tiler": "^0.2.0",
+    "locar-tiler": "^0.3.0",
     "node-fetch": "^3.3.2",
     "pg": "^8.5.1",
     "react": "^19.2.1",
